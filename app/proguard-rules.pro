@@ -66,3 +66,7 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 -dontwarn java.beans.PropertyVetoException
+
+# Native code uses these Java bindings through JNI.
+-keep class go.** { *; }
+-keep class app.qthrone.core.** { *; }

@@ -48,7 +48,7 @@ fun Project.updateSignerPin(): String {
 
 fun Project.setupCommon() {
     android.apply {
-        buildToolsVersion = "35.0.1"
+        buildToolsVersion = "35.0.0"
         compileSdk = 35
         defaultConfig {
             minSdk = 24
@@ -198,7 +198,7 @@ fun Project.setupApp() {
             val variant = this
             outputs.all {
                 this as BaseVariantOutputImpl
-                outputFileName = "qThroneMobile-${variant.versionName}" + outputFileName.removePrefix(project.name)
+                outputFileName = "DexCeed-VPN-${variant.versionName}" + outputFileName.removePrefix(project.name)
                     .replace("-release", "")
                     .replace("-oss", "")
             }

@@ -23,7 +23,7 @@ import java.io.InputStream
  */
 object UpdateChecker {
 
-    const val REPOSITORY = "ttrroyy/qThroneMobile"
+    const val REPOSITORY = "dexceed/DexCeed-VPN"
     const val RELEASES_PAGE = "https://github.com/$REPOSITORY/releases"
     private const val RELEASES_API = "https://api.github.com/repos/$REPOSITORY/releases?per_page=20"
     private const val MANIFEST = "qthrone-update.json"
