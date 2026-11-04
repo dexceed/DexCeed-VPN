@@ -27,7 +27,7 @@ class ReleaseMetadataTest(unittest.TestCase):
             apk = directory / ("qThroneMobile-2.4.2-" + abi + ".apk")
             apk.write_bytes(("signed APK " + abi).encode())
             assets[abi] = dict(name=apk.name, size=apk.stat().st_size, sha256=sha256(apk))
-        return dict(schema=1, packageName="app.qthrone.mobile", channel="stable",
+        return dict(schema=1, packageName="online.dexceed.vpn", channel="stable",
                     versionName="2.4.2", versionCode=69999, signerSha256="original-key", assets=assets)
 
     def test_hidden_metadata_roundtrip_and_rejections(self):
@@ -41,7 +41,7 @@ class ReleaseMetadataTest(unittest.TestCase):
                 embedded_manifest(broken)
 
     def test_bridge_cannot_change_signature_or_downgrade(self):
-        current = dict(packageName="app.qthrone.mobile", signerSha256="key", versionCode=69999)
+        current = dict(packageName="online.dexceed.vpn", signerSha256="key", versionCode=69999)
         validate_bridge(dict(current, versionCode=68999), current)
         validate_bridge(current, current)
         for previous in (dict(current, signerSha256="other"), dict(current, packageName="other"), dict(current, versionCode=70999)):
@@ -71,7 +71,7 @@ class ReleaseMetadataTest(unittest.TestCase):
             self.assertIn("--prerelease", calls[-1])
             self.assertIn("--latest=false", calls[-1])
 
-    def test_only_apks_are_published_and_bridge_metadata_is_uploaded_last(self):
+    def test_fork_publishes_only_its_own_apks(self):
         with tempfile.TemporaryDirectory() as temp:
             directory = Path(temp)
             manifest = self.manifest(directory)
@@ -94,9 +94,8 @@ class ReleaseMetadataTest(unittest.TestCase):
             with patch("publish_release.gh", side_effect=gh):
                 publish(directory, "Notes", "v2.4.2", "commit", "2.4.2")
             uploads = [c for c in calls if c[:2] == ("release", "upload")]
-            self.assertEqual([c[2] for c in uploads], ["v2.4.2", "v2.4.1", "v2.4.1"])
+            self.assertEqual([c[2] for c in uploads], ["v2.4.2"])
             self.assertTrue(all(str(p).endswith(".apk") for p in uploads[0][3:-1]))
-            self.assertEqual(Path(uploads[-1][3]).name, "qthrone-update.json")
             self.assertEqual(calls[-1][:3], ("release", "edit", "v2.4.2"))
             next(iter(directory.glob("*.apk"))).write_bytes(b"tampered")
             with self.assertRaises(ValueError):

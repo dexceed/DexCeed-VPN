@@ -13,7 +13,7 @@ def gh(*args, check=True):
 
 
 def validate_assets(dist, manifest):
-    if manifest["packageName"] != "app.qthrone.mobile" or manifest["channel"] != "stable":
+    if manifest["packageName"] != "online.dexceed.vpn" or manifest["channel"] != "stable":
         raise ValueError("Unexpected release package or channel")
     if set(manifest["assets"]) != set(ABIS + ["universal"]):
         raise ValueError("Missing APK architecture")
@@ -49,7 +49,7 @@ def publish(dist, notes, tag, target, title):
         body.write_text(release_notes(notes, manifest), encoding="utf-8", newline="\n")
         # Old updaters resolve APKs inside the release that holds their JSON.
         # shortcut: old clients scan 20 releases; retain this bridge while migrating them.
-        bridge = manifest["versionName"] == "2.4.2"
+        bridge = manifest["packageName"] == "app.qthrone.mobile" and manifest["versionName"] == "2.4.2"
         if bridge:
             gh("release", "download", "v2.4.1", "--pattern", "qthrone-update.json", "--dir", directory)
             previous = json.loads((directory / "qthrone-update.json").read_text(encoding="utf-8"))
