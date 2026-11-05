@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepare the pinned native binaries and their Java API for the branded 1.0.0 build.
+# Prepare the pinned native binaries and their Java API for the branded 1.0.x builds.
 # Run from a clean disposable checkout with Go 1.27.0, JDK 17 and the Android SDK.
 set -euo pipefail
 root=$(pwd)
