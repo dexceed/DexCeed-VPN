@@ -20,7 +20,8 @@ curl -fL --retry 3 "https://github.com/ttrroyy/qThroneMobile/releases/download/$
 echo "$sha  $apk" | sha256sum -c -
 # The native libraries come from this APK while the Java bindings are generated from THRONE_AAR_REF: both must be the
 # same core build, so the APK's BuildConfig.THRONE_CORE_REF has to name the pinned ref.
-unzip -p "$apk" 'classes*.dex' | grep -aq "$ref" || { echo "upstream $version was not built from core $ref" >&2; exit 1; }
+# grep -c reads to the end: with pipefail, grep -q would stop early and fail unzip with SIGPIPE.
+test "$(unzip -p "$apk" 'classes*.dex' | grep -ac "$ref")" -gt 0 || { echo "upstream $version was not built from core $ref" >&2; exit 1; }
 git init -q "$work/core-src"
 git -C "$work/core-src" fetch --depth=1 https://github.com/ttrroyy/qThrone.git "$ref"
 git -C "$work/core-src" checkout -q --detach FETCH_HEAD
