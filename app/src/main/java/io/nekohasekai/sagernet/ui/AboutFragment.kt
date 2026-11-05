@@ -123,16 +123,6 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                                     )
                                 }
                                 .build())
-                        .addItem(
-                            MaterialAboutActionItem.Builder()
-                                .icon(R.drawable.baseline_public_24)
-                                .text(R.string.project_website)
-                                .setOnClickAction {
-                                    requireContext().launchCustomTab(
-                                        "https://throneproj.github.io"
-                                    )
-                                }
-                                .build())
                         .build())
                 .build()
 

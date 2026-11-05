@@ -18,6 +18,9 @@ test "$ref" = 9d4d1f34b6e97b6ed8f84da6d40105db971c1ff4
 apk="$work/upstream.apk"
 curl -fL --retry 3 "https://github.com/ttrroyy/qThroneMobile/releases/download/$version/qThroneMobile-3.3-universal.apk" -o "$apk"
 echo "$sha  $apk" | sha256sum -c -
+# The native libraries come from this APK while the Java bindings are generated from THRONE_AAR_REF: both must be the
+# same core build, so the APK's BuildConfig.THRONE_CORE_REF has to name the pinned ref.
+unzip -p "$apk" 'classes*.dex' | grep -aq "$ref" || { echo "upstream $version was not built from core $ref" >&2; exit 1; }
 git init -q "$work/core-src"
 git -C "$work/core-src" fetch --depth=1 https://github.com/ttrroyy/qThrone.git "$ref"
 git -C "$work/core-src" checkout -q --detach FETCH_HEAD

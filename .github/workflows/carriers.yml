@@ -1,5 +1,5 @@
-name: qThroneMobile transports
-run-name: qThroneMobile transports
+name: DexCeed VPN transports
+run-name: DexCeed VPN transports
 on:
   workflow_dispatch:
     inputs:

@@ -1,5 +1,5 @@
-name: qThroneMobile artwork
-run-name: qThroneMobile artwork
+name: DexCeed VPN artwork
+run-name: DexCeed VPN artwork
 on:
   workflow_dispatch:
 permissions:

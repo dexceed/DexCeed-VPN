@@ -240,9 +240,9 @@
     <string name="always_on_vpn">VPN دائم التشغيل</string>
     <string name="always_on_vpn_lockdown">مفعّل، مع حظر الاتصالات بدون VPN</string>
     <string name="always_on_vpn_no_profile">لا يوجد ملف تعريف لـ VPN دائم التشغيل</string>
-    <string name="always_on_vpn_no_profile_text">حدد ملف تعريف في Throne؛ حتى ذلك الحين لا يمكن لـ VPN دائم التشغيل الاتصال.</string>
+    <string name="always_on_vpn_no_profile_text">حدد ملف تعريف في DexCeed VPN؛ حتى ذلك الحين لا يمكن لـ VPN دائم التشغيل الاتصال.</string>
     <string name="always_on_vpn_off">معطّل. اضبطه في إعدادات VPN بالنظام</string>
-    <string name="always_on_vpn_on">مفعّل: يشغّل Android Throne تلقائيًا في وضع VPN</string>
+    <string name="always_on_vpn_on">مفعّل: يشغّل Android DexCeed VPN تلقائيًا في وضع VPN</string>
     <string name="always_on_vpn_unknown">اضبطه في إعدادات VPN بالنظام</string>
     <string name="amnezia_content_padding_addition">إضافة حشو المحتوى</string>
     <string name="amnezia_disable_cookies">تعطيل الكوكيز</string>
@@ -474,9 +474,9 @@
     <string name="backup_restore_header">نسخة احتياطية أُنشئت في %1$s (%2$s).\nحدد الأجزاء المراد استعادتها:</string>
     <string name="backup_restore_select_part">حدد جزءًا واحدًا على الأقل لاستعادته.</string>
     <string name="backup_restore_title">استعادة نسخة احتياطية</string>
-    <string name="backup_restore_warning">كل جزء محدد يستبدل البيانات الحالية. لا يمكن التراجع عن ذلك.\nسيُعاد تشغيل Throne لإكمال الاستعادة.</string>
-    <string name="backup_restored">استُعيدت النسخة الاحتياطية بنجاح. سيُعاد تشغيل Throne الآن لتطبيق التغييرات.</string>
-    <string name="backup_restored_warnings">استُعيدت النسخة الاحتياطية. سيُعاد تشغيل Throne الآن لتطبيق التغييرات.\n\nملاحظات:\n%s</string>
+    <string name="backup_restore_warning">كل جزء محدد يستبدل البيانات الحالية. لا يمكن التراجع عن ذلك.\nسيُعاد تشغيل DexCeed VPN لإكمال الاستعادة.</string>
+    <string name="backup_restored">استُعيدت النسخة الاحتياطية بنجاح. سيُعاد تشغيل DexCeed VPN الآن لتطبيق التغييرات.</string>
+    <string name="backup_restored_warnings">استُعيدت النسخة الاحتياطية. سيُعاد تشغيل DexCeed VPN الآن لتطبيق التغييرات.\n\nملاحظات:\n%s</string>
     <string name="backup_restoring">جارٍ الاستعادة…</string>
     <string name="backup_select_part">حدد جزءًا واحدًا على الأقل لإدراجه في النسخة الاحتياطية.</string>
     <string name="backup_to_webdav">النسخ الاحتياطي إلى WebDAV</string>
@@ -494,8 +494,8 @@
     <string name="battery_optimization">تحسين البطارية</string>
     <string name="battery_prompt_allow">السماح</string>
     <string name="battery_prompt_later">يمكنك السماح لاحقًا في الإعدادات › عام › تحسين البطارية</string>
-    <string name="battery_prompt_message">قد يوقف Android أو يؤخر التطبيقات في الخلفية لتوفير البطارية. اسمح لـ Throne بالعمل بدون تحسين بطارية ليبقى VPN متصلًا مع إيقاف الشاشة ويستمر التبديل بين الخوادم من الإشعار أو البلاطة أو الودج في العمل.</string>
-    <string name="battery_prompt_title">إبقاء Throne يعمل</string>
+    <string name="battery_prompt_message">قد يوقف Android أو يؤخر التطبيقات في الخلفية لتوفير البطارية. اسمح لـ DexCeed VPN بالعمل بدون تحسين بطارية ليبقى VPN متصلًا مع إيقاف الشاشة ويستمر التبديل بين الخوادم من الإشعار أو البلاطة أو الودج في العمل.</string>
+    <string name="battery_prompt_title">إبقاء DexCeed VPN يعمل</string>
     <string name="battery_settings_missing">لا يحتوي هذا الجهاز على إعدادات تحسين البطارية</string>
     <string name="battery_state_optimized">محسّن: قد يوقف Android VPN في الخلفية</string>
     <string name="battery_state_restricted">مقيّد بالنظام: بدء التشغيل في الخلفية محظور</string>
@@ -773,7 +773,7 @@
     <string name="listen_port">منفذ الاستماع</string>
     <string name="location_settings">إعدادات الموقع</string>
     <string name="log_buffer_size">حجم مخزن السجل (كيلوبايت)</string>
-    <string name="log_crash_title">تعطل Throne</string>
+    <string name="log_crash_title">تعطل DexCeed VPN</string>
     <string name="log_export_failed">فشل تصدير السجل: %s</string>
     <string name="log_hide_destinations">إخفاء الوجهات</string>
     <string name="log_hide_sensitive">إخفاء البيانات الحساسة</string>
@@ -813,7 +813,7 @@
     <string name="notification_permission">الإشعارات</string>
     <string name="notification_permission_allowed">مسموح</string>
     <string name="notification_permission_blocked">محظور: إشعار الخدمة وأزراره مخفيان. انقر للسماح.</string>
-    <string name="notification_permission_rationale">يعرض Throne إشعارًا أثناء عمل VPN، بأزرار لإيقافه وتبديل الخوادم. اسمح بالإشعارات لرؤيته.</string>
+    <string name="notification_permission_rationale">يعرض DexCeed VPN إشعارًا أثناء عمل VPN، بأزرار لإيقافه وتبديل الخوادم. اسمح بالإشعارات لرؤيته.</string>
     <string name="notification_previous">السابق</string>
     <string name="notification_switch">تبديل…</string>
     <string name="notification_switching">جارٍ التبديل…</string>
@@ -822,7 +822,7 @@
     <string name="ntp_server_address">الخادم</string>
     <string name="ntp_server_port">المنفذ</string>
     <string name="oem_background">الخلفية والبدء التلقائي</string>
-    <string name="oem_background_summary">إعدادات خاصة بالجهاز يمكنها إيقاف Throne في الخلفية</string>
+    <string name="oem_background_summary">إعدادات خاصة بالجهاز يمكنها إيقاف DexCeed VPN في الخلفية</string>
     <string name="one_per_line">سطر واحد لكل مدخل</string>
     <string name="open_app_settings">فتح إعدادات النظام</string>
     <string name="openconnect_auth_group">مجموعة المصادقة</string>
@@ -924,7 +924,6 @@
     <string name="profiles_test_url">اختبار URL</string>
     <string name="profiles_update_subscription">تحديث الاشتراك</string>
 
-    <string name="project_website">موقع المشروع</string>
     <string name="protocol_version">إصدار البروتوكول</string>
     <string name="quic_idle_timeout">مهلة الخمول</string>
     <string name="quic_initial_packet_size">حجم الحزمة الأولي</string>
@@ -1343,10 +1342,10 @@
     <string name="update_current_version">الإصدار الحالي: %s</string>
     <string name="update_dialog_title">إصدار جديد متاح</string>
     <string name="update_downloading">جارٍ تنزيل التحديث</string>
-    <string name="update_downloading_x">جارٍ تنزيل Throne %s</string>
+    <string name="update_downloading_x">جارٍ تنزيل DexCeed VPN %s</string>
     <string name="update_error_package">التنزيل ليس تحديثًا لهذا التطبيق.</string>
     <string name="update_error_parse">التنزيل ليس ملف APK صالحًا.</string>
-    <string name="update_error_pin">التنزيل غير موقّع بمفتاح إصدار Throne.</string>
+    <string name="update_error_pin">التنزيل غير موقّع بمفتاح إصدار DexCeed VPN.</string>
     <string name="update_error_sha256">التنزيل لا يطابق تجزئته SHA-256.</string>
     <string name="update_error_signature">التنزيل موقّع بمفتاح مختلف عن هذا البناء، لذا لا يستطيع Android تثبيته كتحديث. انسخ احتياطيًا، ألغِ تثبيت هذا البناء وثبّت الإصدار الرسمي من GitHub.</string>
     <string name="update_error_size">التنزيل ليس بالحجم المتوقع.</string>
@@ -1358,19 +1357,19 @@
     <string name="update_installing_hint">أكّد التثبيت في نافذة النظام.</string>
     <string name="update_new_version">الإصدار الجديد: %s</string>
     <string name="update_new_version_pre">الإصدار الجديد: %s (إصدار تجريبي)</string>
-    <string name="update_notification_available">Throne %s متاح</string>
+    <string name="update_notification_available">DexCeed VPN %s متاح</string>
     <string name="update_notification_available_text">انقر لرؤية التحديث</string>
     <string name="update_notification_channel">تحديثات التطبيق</string>
     <string name="update_notification_ready">التحديث جاهز</string>
     <string name="update_notification_tap_install">انقر للتثبيت</string>
-    <string name="update_permission_message">لتحديث نفسه، يحتاج Throne إلى صلاحية تثبيت التطبيقات. فعّلها لـ Throne في الشاشة التالية ثم عد.</string>
+    <string name="update_permission_message">لتحديث نفسه، يحتاج DexCeed VPN إلى صلاحية تثبيت التطبيقات. فعّلها لـ DexCeed VPN في الشاشة التالية ثم عد.</string>
     <string name="update_permission_title">السماح بتثبيت التحديثات</string>
     <string name="update_progress">%1$s / %2$s</string>
     <string name="update_reason_no_abi">لا يوجد APK لـ %s</string>
     <string name="update_reason_no_manifest">لا يحتوي الإصدار على مانيفست تحديث</string>
     <string name="update_restart_note">يتوقف الاتصال أثناء استبدال التطبيق ويُستأنف بعد التحديث.</string>
     <string name="update_size">الحجم: %s</string>
-    <string name="update_up_to_date">qThrone محدّث</string>
+    <string name="update_up_to_date">DexCeed VPN محدّث</string>
     <string name="update_verifying">جارٍ التحقق من التحديث…</string>
     <string name="use_dns_object">استخدام كائن DNS مخصص</string>
     <string name="use_dns_object_sum">استبدال قسم DNS بالكامل بالكائن أدناه</string>
@@ -1384,7 +1383,7 @@
     <string name="vmess_authenticated_length">طول مُصادق عليه</string>
     <string name="vmess_global_padding">حشو عام</string>
     <string name="vpn_dialog_copy_command">نسخ الأمر</string>
-    <string name="vpn_dialog_missing_message">لا يحتوي هذا الجهاز على شاشة لتأكيد الوصول إلى VPN، لذا لا يستطيع Throne طلبه. امنحه مرة واحدة عبر adb:\n\nadb shell appops set %1$s ACTIVATE_VPN allow\n\nأو بدّل وضع الخدمة إلى «البروكسي فقط».</string>
+    <string name="vpn_dialog_missing_message">لا يحتوي هذا الجهاز على شاشة لتأكيد الوصول إلى VPN، لذا لا يستطيع DexCeed VPN طلبه. امنحه مرة واحدة عبر adb:\n\nadb shell appops set %1$s ACTIVATE_VPN allow\n\nأو بدّل وضع الخدمة إلى «البروكسي فقط».</string>
     <string name="vpn_dialog_missing_title">تأكيد VPN غير متاح</string>
     <string name="vpn_dialog_use_proxy">استخدام وضع البروكسي</string>
     <string name="vpn_ipv6">IPv6 لـ TUN</string>
@@ -1463,9 +1462,9 @@
     <string name="widget_toggle_description">بدء أو إيقاف VPN بنقرة واحدة</string>
     <string name="widget_toggle_name">تبديل</string>
     <string name="wifi_location_off_message">الموقع معطّل، والنظام يخفي اسم Wi-Fi أثناء معطّله. فعّل الموقع لتطابق قواعد Wi-Fi.</string>
-    <string name="wifi_permission_background_message">يستمر VPN في العمل بينما يكون Throne مغلقًا، لذا تحتاج قواعد Wi-Fi إلى صلاحية الموقع دائمًا. اختر «السماح طوال الوقت» في الشاشة التالية.</string>
+    <string name="wifi_permission_background_message">يستمر VPN في العمل بينما يكون DexCeed VPN مغلقًا، لذا تحتاج قواعد Wi-Fi إلى صلاحية الموقع دائمًا. اختر «السماح طوال الوقت» في الشاشة التالية.</string>
     <string name="wifi_permission_continue">متابعة</string>
-    <string name="wifi_permission_message">القواعد التي تطابق اسم Wi-Fi (SSID) أو نقطة الوصول (BSSID) تحتاج وصولًا دقيقًا للموقع: يخفي Android اسم Wi-Fi المتصل عن التطبيقات بدونه. يقرأ Throne فقط الشبكة المتصلة، وليس موقعك أبدًا.</string>
+    <string name="wifi_permission_message">القواعد التي تطابق اسم Wi-Fi (SSID) أو نقطة الوصول (BSSID) تحتاج وصولًا دقيقًا للموقع: يخفي Android اسم Wi-Fi المتصل عن التطبيقات بدونه. يقرأ DexCeed VPN فقط الشبكة المتصلة، وليس موقعك أبدًا.</string>
     <string name="wifi_permission_settings_message">رُفض الوصول إلى الموقع. اسمح به في إعدادات التطبيق لتطابق قواعد Wi-Fi.</string>
     <string name="wifi_permission_title">قواعد Wi-Fi</string>
     <string name="wifi_rule_needs_location">يحتاج الوصول إلى الموقع للتطابق؛ الحفظ يطلبه</string>
