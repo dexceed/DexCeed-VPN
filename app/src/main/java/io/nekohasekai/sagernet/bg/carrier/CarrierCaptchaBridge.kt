@@ -1,12 +1,12 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.app
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.app
 import java.util.UUID
 
 /** Private, same-app messages; captcha addresses and tokens never enter logs. */
@@ -27,6 +27,8 @@ class CarrierCaptchaBridge(private val process: Process, private val onlyIfUiIdl
     val userCancelled: Boolean @Synchronized get() = cancelledByUser
     @Synchronized fun accept(line: String) {
         if(closed) return
+        // FreeTurn's page answers its local proxy by itself; the client says when it has what it needs.
+        if(client=="freeturn" && line.trim()=="CAPTCHA_DONE") { finishRequest();return }
         val turn=line.startsWith("VK_AUTH_REQUIRED|")
         if(!turn && !line.startsWith("CAPTCHA_SOLVE|")) return
         // WDTT Plus numbers its requests: CAPTCHA_SOLVE|id|mode|uri|token, answered as CAPTCHA_RESULT|id|value.
@@ -79,7 +81,7 @@ class CarrierCaptchaBridge(private val process: Process, private val onlyIfUiIdl
                     if(left>0) Thread.sleep(left)
                 } catch(_:InterruptedException) { return@Thread }
                 try { respond(id,"error:timeout") } catch(error:Exception) { Logs.w(error) }
-            },"qThrone-auto-captcha-queue").apply { isDaemon=true;start() }
+            },"Rawline-auto-captcha-queue").apply { isDaemon=true;start() }
         } else if (!CarrierUiRequests.post(id,target,turn,onlyIfIdle=onlyIfUiIdle || !allowUi,client=client)) {
             respond(id,"error:VK confirmation is busy")
         }

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,15 +12,15 @@ import android.graphics.Color
 import androidx.lifecycle.lifecycleScope
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
-import app.qthrone.mobile.R
-import app.qthrone.mobile.database.RouteManager
-import app.qthrone.mobile.database.SagerDatabase
-import app.qthrone.mobile.ktx.needReload
-import app.qthrone.mobile.route.OutboundIds
-import app.qthrone.mobile.route.RouteProfile
-import app.qthrone.mobile.route.RouteRule
-import app.qthrone.mobile.route.MobileRouteInput
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
+import app.rawline.mobile.R
+import app.rawline.mobile.database.RouteManager
+import app.rawline.mobile.database.SagerDatabase
+import app.rawline.mobile.ktx.needReload
+import app.rawline.mobile.route.OutboundIds
+import app.rawline.mobile.route.RouteProfile
+import app.rawline.mobile.route.RouteRule
+import app.rawline.mobile.route.MobileRouteInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,12 +36,12 @@ class MobileRoutingFragment : ToolbarFragment() {
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
         column = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background)
+            orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen)
         }
         return ScrollView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             isFillViewport = true
-            setBackgroundColor(MobilePalette.background)
+            setBackgroundColor(MobilePalette.screen)
             addView(column, android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
                 val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -74,16 +74,16 @@ class MobileRoutingFragment : ToolbarFragment() {
                 val state = if (rule.disabled) " · " + getString(R.string.route_rule_off_mark) else ""
                 root.addView(line(title + "\n" + target(rule.outbound_id) + state) {
                     val toggle = getString(if (rule.disabled) R.string.route_rule_turn_on else R.string.route_rule_turn_off)
-                    MaterialAlertDialogBuilder(requireContext()).setTitle(title)
+                    MobileAlertDialogBuilder(requireContext()).setTitle(title)
                         .setItems(arrayOf(getString(R.string.qmobile_route_target),toggle,getString(R.string.qmobile_route_remove))) { _,action ->
                             if (action==0) chooseTarget(rule.outbound_id) { id -> save(route) { it.rules[index].outbound_id=id } }
                             else if (action==1) save(route) { it.rules[index].disabled=!rule.disabled }
-                            else MaterialAlertDialogBuilder(requireContext()).setMessage(R.string.qmobile_route_remove)
+                            else MobileAlertDialogBuilder(requireContext()).setMessage(R.string.qmobile_route_remove)
                                 .setNegativeButton(android.R.string.cancel,null).setPositiveButton(android.R.string.ok) { _,_ -> save(route) { it.rules.removeAt(index) } }.show()
                         }.show()
                 })
             }
-            root.addView(line(getString(R.string.qmobile_route_advanced)) { (requireActivity() as MainActivity).displayFragment(SettingsFragment.forScreen("app.qthrone.mobile.ui.settings.RoutingSettingsFragment",getString(R.string.qmobile_route_advanced))) })
+            root.addView(line(getString(R.string.qmobile_route_advanced)) { (requireActivity() as MainActivity).displayFragment(SettingsFragment.forScreen("app.rawline.mobile.ui.settings.RoutingSettingsFragment",getString(R.string.qmobile_route_advanced))) })
         }
     }
     private fun save(snapshot: RouteProfile, change: (RouteProfile) -> Unit) {
@@ -105,7 +105,7 @@ class MobileRoutingFragment : ToolbarFragment() {
             val profiles = withContext(Dispatchers.IO) { SagerDatabase.proxyDao.getAll() }
             val ids = listOf(OutboundIds.PROXY,OutboundIds.DIRECT) + profiles.map { it.id }
             val labels = listOf(getString(R.string.qmobile_route_main),getString(R.string.qmobile_route_direct)) + profiles.map { it.displayName() }
-            MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_target)
+            MobileAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_target)
                 .setSingleChoiceItems(labels.toTypedArray(),ids.indexOf(selected)) { dialog,index -> dialog.dismiss(); chosen(ids[index]) }
                 .setNegativeButton(android.R.string.cancel,null).show()
         }
@@ -113,10 +113,10 @@ class MobileRoutingFragment : ToolbarFragment() {
     private fun newRule(route: RouteProfile) {
         if (route.is_remote || route.prevent_modifications) return
         val kinds = arrayOf(getString(R.string.qmobile_route_domains),getString(R.string.qmobile_route_ips),getString(R.string.qmobile_route_apps))
-        MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_add).setItems(kinds) { _,kind ->
+        MobileAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_add).setItems(kinds) { _,kind ->
             if (kind==2) { chooseApps(route); return@setItems }
             val field = EditText(requireContext()).apply { hint=kinds[kind]; minLines=3; maxLines=8 }
-            val dialog = MaterialAlertDialogBuilder(requireContext()).setTitle(kinds[kind]).setView(field)
+            val dialog = MobileAlertDialogBuilder(requireContext()).setTitle(kinds[kind]).setView(field)
                 .setNegativeButton(android.R.string.cancel,null).setPositiveButton(android.R.string.ok,null).create()
             dialog.setOnShowListener {
                 dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
@@ -145,7 +145,7 @@ class MobileRoutingFragment : ToolbarFragment() {
                     .map { it.packageName to pm.getApplicationLabel(it).toString() }.sortedBy { it.second.lowercase() }
             }
             val checked=BooleanArray(apps.size)
-            MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_apps)
+            MobileAlertDialogBuilder(requireContext()).setTitle(R.string.qmobile_route_apps)
                 .setMultiChoiceItems(apps.map { "${it.second}\n${it.first}" }.toTypedArray(),checked) { _,index,value -> checked[index]=value }
                 .setNegativeButton(android.R.string.cancel,null).setPositiveButton(android.R.string.ok) { _,_ ->
                     val selected=apps.filterIndexed { index,_ -> checked[index] }

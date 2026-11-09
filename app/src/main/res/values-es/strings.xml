@@ -453,7 +453,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Enlace Throne</string>
+    <string name="rawline_link">Enlace DexCeed VPN</string>
     <string name="edit_as_json">Editar como JSON</string>
     <string name="raw_json_invalid">El JSON no es un perfil válido de este tipo</string>
     <string name="tri_state_default">Mantener predeterminado</string>
@@ -480,7 +480,7 @@
     <string name="settings_core">Núcleo</string>
     <string name="settings_core_sum">Registro, estadísticas, Clash API, seguridad, NTP</string>
     <string name="settings_backup">Copia de seguridad y restauración</string>
-    <string name="settings_backup_sum">Archivos .thrbackup compatibles con Throne de escritorio, local y WebDAV</string>
+    <string name="settings_backup_sum">Archivos .rwlbackup compatibles con DexCeed VPN de escritorio, local y WebDAV</string>
     <string name="setting_default">Predeterminado</string>
     <string name="setting_default_value">Predeterminado (%s)</string>
     <string name="cag_connection">Conexión</string>
@@ -655,7 +655,7 @@
     <string name="route_import_clipboard_profile">¿Importar el perfil de enrutamiento \"%s\" desde el portapapeles?</string>
     <string name="route_import_clipboard_rules">¿Importar una lista de reglas de enrutamiento desde el portapapeles?</string>
     <string name="route_import_paste_title">Importar perfil de enrutamiento</string>
-    <string name="route_import_paste_hint">Pegue un enlace de ruta Throne, un enlace remoteRoute, un blob base64 o una matriz de reglas JSON</string>
+    <string name="route_import_paste_hint">Pegue un enlace de ruta DexCeed VPN, un enlace remoteRoute, un blob base64 o una matriz de reglas JSON</string>
     <string name="route_import_invalid_title">Entrada no válida</string>
     <string name="route_import_invalid">No se pudo importar este perfil de enrutamiento:\n%s</string>
     <string name="route_import_warnings_title">Importado con advertencias</string>
@@ -702,7 +702,7 @@
     <string name="route_profile_default_outbound">Salida predeterminada</string>
     <string name="route_profile_remote_source">Origen remoto</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (enlace throne://route, base64 o JSON)</string>
+    <string name="route_profile_url_hint">https://… (enlace rawline://route, base64 o JSON)</string>
     <string name="route_profile_auto_update">Actualización automática</string>
     <string name="route_profile_auto_update_sum">Volver a obtener este perfil desde la URL cuando se actualicen automáticamente los perfiles remotos. Sus ediciones locales se sobrescriben en cada actualización.</string>
     <string name="route_profile_fetch">Obtener ahora</string>
@@ -1024,7 +1024,7 @@
     </plurals>
     <string name="profiles_copy_links">Copiar enlaces</string>
     <string name="profiles_copy_share_links">Enlaces para compartir</string>
-    <string name="profiles_copy_throne_links">Enlaces Throne</string>
+    <string name="profiles_copy_rawline_links">Enlaces DexCeed VPN</string>
     <plurals name="profiles_copied">
         <item quantity="one">Se copió %d elemento</item>
         <item quantity="other">Se copiaron %d elementos</item>
@@ -1411,14 +1411,14 @@
     <string name="backup_part_routes">Perfiles de enrutamiento</string>
     <string name="backup_part_settings">Ajustes</string>
     <string name="backup_part_otp">Perfiles OTP (no se restauran en Android)</string>
-    <string name="backup_local_summary">Las copias de seguridad usan el formato de Throne de escritorio (.thrbackup): cualquiera de las aplicaciones las restaura. Las credenciales de WebDAV permanecen en este dispositivo.</string>
+    <string name="backup_local_summary">Las copias de seguridad usan el formato de DexCeed VPN de escritorio (.rwlbackup): cualquiera de las aplicaciones las restaura. Las credenciales de WebDAV permanecen en este dispositivo.</string>
     <string name="backup_create">Crear copia de seguridad</string>
     <string name="backup_restore">Restaurar</string>
     <string name="backup_select_part">Seleccione al menos una parte para incluir en la copia de seguridad.</string>
     <string name="backup_creating">Creando copia de seguridad…</string>
     <string name="backup_created">Copia de seguridad creada. Incluido: %s</string>
     <string name="backup_failed">No se pudo crear la copia de seguridad: %s</string>
-    <string name="backup_open_label">Restaurar copia de seguridad de Throne</string>
+    <string name="backup_open_label">Restaurar copia de seguridad de DexCeed VPN</string>
     <string name="backup_restore_title">Restaurar copia de seguridad</string>
     <string name="backup_restore_header">Copia de seguridad creada el %1$s (%2$s).\nSeleccione qué partes restaurar:</string>
     <string name="backup_unknown_date">fecha desconocida</string>
@@ -1434,7 +1434,7 @@
     <string name="backup_restored">Copia de seguridad restaurada con éxito. DexCeed VPN se reiniciará ahora para que los cambios surtan efecto.</string>
     <string name="backup_restored_warnings">Copia de seguridad restaurada. DexCeed VPN se reiniciará ahora para que los cambios surtan efecto.\n\nNotas:\n%s</string>
     <string name="backup_restore_failed">La restauración falló: %s</string>
-    <string name="backup_error_not_backup">No es un archivo de copia de seguridad válido de Throne.</string>
+    <string name="backup_error_not_backup">No es un archivo de copia de seguridad válido de DexCeed VPN.</string>
     <string name="backup_error_version">Versión de formato de copia de seguridad no admitida: %d.\nEsta copia puede haber sido creada con una versión más reciente de la aplicación.</string>
     <string name="backup_error_corrupt">El archivo de copia de seguridad está dañado o incompleto.</string>
     <string name="backup_error_nothing">Este archivo de copia de seguridad no contiene datos restaurables.</string>
@@ -1449,17 +1449,17 @@
     <string name="backup_warn_dropped_profiles">Se omitieron %d perfiles sin grupo.</string>
     <string name="backup_warn_unlisted_profiles">Se añadieron al final %d perfiles que faltaban en la lista de su grupo.</string>
     <string name="backup_warn_orphan_rules">Se omitieron %d reglas de perfiles de enrutamiento que faltaban.</string>
-    <string name="backup_warn_raw_routes">Se conservan de solo lectura %d perfiles de enrutamiento sin procesar de Throne de escritorio; Android no puede usarlos.</string>
+    <string name="backup_warn_raw_routes">Se conservan de solo lectura %d perfiles de enrutamiento sin procesar de DexCeed VPN de escritorio; Android no puede usarlos.</string>
     <string name="backup_warn_lan_access">La copia de seguridad permite la conexión a otros dispositivos (dirección de entrada %s); esto estaba desactivado. Actívelo de nuevo en los ajustes de entrada si lo necesita.</string>
     <string name="webdav_choose_backup">Elegir una copia de seguridad</string>
-    <string name="webdav_no_backups">No se encontraron archivos .thrbackup en %s.</string>
+    <string name="webdav_no_backups">No se encontraron archivos .rwlbackup en %s.</string>
     <string name="webdav_listing">Leyendo la carpeta WebDAV…</string>
     <string name="webdav_uploading">Subiendo a WebDAV…</string>
     <string name="webdav_downloading">Descargando de WebDAV…</string>
-    <string name="route_raw_summary">Sin procesar (Throne de escritorio) · solo lectura</string>
+    <string name="route_raw_summary">Sin procesar (DexCeed VPN de escritorio) · solo lectura</string>
     <string name="route_raw_view">Ver</string>
-    <string name="route_raw_not_usable">Los perfiles de enrutamiento sin procesar de Throne de escritorio no pueden usarse en Android.</string>
-    <string name="route_raw_notice">Este perfil de enrutamiento sin procesar se creó en Throne de escritorio. Se conserva sin cambios para que las copias de seguridad lo devuelvan al escritorio; Android no puede editarlo ni usarlo.</string>
+    <string name="route_raw_not_usable">Los perfiles de enrutamiento sin procesar de DexCeed VPN de escritorio no pueden usarse en Android.</string>
+    <string name="route_raw_notice">Este perfil de enrutamiento sin procesar se creó en DexCeed VPN de escritorio. Se conserva sin cambios para que las copias de seguridad lo devuelvan al escritorio; Android no puede editarlo ni usarlo.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d perfil de punto final de escritorio (OpenVPN / OpenConnect) se conserva con este perfil de enrutamiento pero no se ejecuta en Android.</item>
         <item quantity="other">%d perfiles de punto final de escritorio (OpenVPN / OpenConnect) se conservan con este perfil de enrutamiento pero no se ejecutan en Android.</item>

@@ -453,7 +453,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Link Throne</string>
+    <string name="rawline_link">Link DexCeed VPN</string>
     <string name="edit_as_json">Modifica come JSON</string>
     <string name="raw_json_invalid">Il JSON non è un profilo valido di questo tipo</string>
     <string name="tri_state_default">Mantieni predefinito</string>
@@ -480,7 +480,7 @@
     <string name="settings_core">Core</string>
     <string name="settings_core_sum">Logging, statistiche, Clash API, sicurezza, NTP</string>
     <string name="settings_backup">Backup e ripristino</string>
-    <string name="settings_backup_sum">File .thrbackup condivisi con Throne desktop, locale e WebDAV</string>
+    <string name="settings_backup_sum">File .rwlbackup condivisi con DexCeed VPN desktop, locale e WebDAV</string>
     <string name="setting_default">Predefinito</string>
     <string name="setting_default_value">Predefinito (%s)</string>
     <string name="cag_connection">Connessione</string>
@@ -655,7 +655,7 @@
     <string name="route_import_clipboard_profile">Importare il profilo di instradamento \"%s\" dagli appunti?</string>
     <string name="route_import_clipboard_rules">Importare un elenco di regole di instradamento dagli appunti?</string>
     <string name="route_import_paste_title">Importa profilo di instradamento</string>
-    <string name="route_import_paste_hint">Incolla un link route Throne, un link remoteRoute, un blob base64 o un array JSON di regole</string>
+    <string name="route_import_paste_hint">Incolla un link route DexCeed VPN, un link remoteRoute, un blob base64 o un array JSON di regole</string>
     <string name="route_import_invalid_title">Input non valido</string>
     <string name="route_import_invalid">Impossibile importare questo profilo di instradamento:\n%s</string>
     <string name="route_import_warnings_title">Importato con avvisi</string>
@@ -702,7 +702,7 @@
     <string name="route_profile_default_outbound">Outbound predefinito</string>
     <string name="route_profile_remote_source">Sorgente remota</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (link throne://route, base64 o JSON)</string>
+    <string name="route_profile_url_hint">https://… (link rawline://route, base64 o JSON)</string>
     <string name="route_profile_auto_update">Aggiornamento automatico</string>
     <string name="route_profile_auto_update_sum">Recupera di nuovo questo profilo dall\'URL quando i profili remoti si aggiornano automaticamente. Le tue modifiche locali vengono sovrascritte ad ogni aggiornamento.</string>
     <string name="route_profile_fetch">Recupera ora</string>
@@ -1024,7 +1024,7 @@
     </plurals>
     <string name="profiles_copy_links">Copia link</string>
     <string name="profiles_copy_share_links">Link di condivisione</string>
-    <string name="profiles_copy_throne_links">Link Throne</string>
+    <string name="profiles_copy_rawline_links">Link DexCeed VPN</string>
     <plurals name="profiles_copied">
         <item quantity="one">Copiato %d elemento</item>
         <item quantity="other">Copiati %d elementi</item>
@@ -1411,14 +1411,14 @@
     <string name="backup_part_routes">Profili di instradamento</string>
     <string name="backup_part_settings">Impostazioni</string>
     <string name="backup_part_otp">Profili OTP (non ripristinati su Android)</string>
-    <string name="backup_local_summary">I backup usano il formato Throne desktop (.thrbackup): entrambe le app li ripristinano. Le credenziali WebDAV restano su questo dispositivo.</string>
+    <string name="backup_local_summary">I backup usano il formato DexCeed VPN desktop (.rwlbackup): entrambe le app li ripristinano. Le credenziali WebDAV restano su questo dispositivo.</string>
     <string name="backup_create">Crea backup</string>
     <string name="backup_restore">Ripristina</string>
     <string name="backup_select_part">Seleziona almeno una parte da includere nel backup.</string>
     <string name="backup_creating">Creazione del backup…</string>
     <string name="backup_created">Backup creato. Incluso: %s</string>
     <string name="backup_failed">Impossibile creare il backup: %s</string>
-    <string name="backup_open_label">Ripristina backup Throne</string>
+    <string name="backup_open_label">Ripristina backup DexCeed VPN</string>
     <string name="backup_restore_title">Ripristina backup</string>
     <string name="backup_restore_header">Backup creato il %1$s (%2$s).\nSeleziona quali parti ripristinare:</string>
     <string name="backup_unknown_date">data sconosciuta</string>
@@ -1434,7 +1434,7 @@
     <string name="backup_restored">Backup ripristinato con successo. DexCeed VPN verrà ora riavviato affinché le modifiche abbiano effetto.</string>
     <string name="backup_restored_warnings">Backup ripristinato. DexCeed VPN verrà ora riavviato affinché le modifiche abbiano effetto.\n\nNote:\n%s</string>
     <string name="backup_restore_failed">Ripristino fallito: %s</string>
-    <string name="backup_error_not_backup">Non è un file di backup Throne valido.</string>
+    <string name="backup_error_not_backup">Non è un file di backup DexCeed VPN valido.</string>
     <string name="backup_error_version">Versione del formato di backup non supportata: %d.\nQuesto backup potrebbe essere stato creato con una versione più recente dell\'applicazione.</string>
     <string name="backup_error_corrupt">Il file di backup è danneggiato o incompleto.</string>
     <string name="backup_error_nothing">Questo file di backup non contiene dati ripristinabili.</string>
@@ -1449,17 +1449,17 @@
     <string name="backup_warn_dropped_profiles">Saltati %d profili senza gruppo.</string>
     <string name="backup_warn_unlisted_profiles">Aggiunti alla fine %d profili mancanti nell\'elenco del loro gruppo.</string>
     <string name="backup_warn_orphan_rules">Saltate %d regole di profili di instradamento mancanti.</string>
-    <string name="backup_warn_raw_routes">%d profili di instradamento grezzi di Throne desktop sono conservati in sola lettura; Android non può usarli.</string>
+    <string name="backup_warn_raw_routes">%d profili di instradamento grezzi di DexCeed VPN desktop sono conservati in sola lettura; Android non può usarli.</string>
     <string name="backup_warn_lan_access">Il backup permette ad altri dispositivi di connettersi (indirizzo inbound %s); questo è stato disattivato. Riabilitalo nelle impostazioni inbound se ti serve.</string>
     <string name="webdav_choose_backup">Scegli un backup</string>
-    <string name="webdav_no_backups">Nessun file .thrbackup trovato in %s.</string>
+    <string name="webdav_no_backups">Nessun file .rwlbackup trovato in %s.</string>
     <string name="webdav_listing">Lettura della cartella WebDAV…</string>
     <string name="webdav_uploading">Caricamento su WebDAV…</string>
     <string name="webdav_downloading">Download da WebDAV…</string>
-    <string name="route_raw_summary">Grezzo (Throne desktop) · sola lettura</string>
+    <string name="route_raw_summary">Grezzo (DexCeed VPN desktop) · sola lettura</string>
     <string name="route_raw_view">Visualizza</string>
-    <string name="route_raw_not_usable">I profili di instradamento grezzi di Throne desktop non possono essere usati su Android.</string>
-    <string name="route_raw_notice">Questo profilo di instradamento grezzo è stato creato su Throne desktop. È conservato senza modifiche affinché i backup lo restituiscano al desktop; Android non può modificarlo né usarlo.</string>
+    <string name="route_raw_not_usable">I profili di instradamento grezzi di DexCeed VPN desktop non possono essere usati su Android.</string>
+    <string name="route_raw_notice">Questo profilo di instradamento grezzo è stato creato su DexCeed VPN desktop. È conservato senza modifiche affinché i backup lo restituiscano al desktop; Android non può modificarlo né usarlo.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d profilo endpoint desktop (OpenVPN / OpenConnect) è conservato con questo profilo di instradamento ma non viene eseguito su Android.</item>
         <item quantity="other">%d profili endpoint desktop (OpenVPN / OpenConnect) sono conservati con questo profilo di instradamento ma non vengono eseguiti su Android.</item>

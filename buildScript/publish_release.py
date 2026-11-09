@@ -43,7 +43,7 @@ def validate_bridge(previous, manifest):
 def publish(dist, notes, tag, target, title):
     manifest = json.loads((dist / "qthrone-update.json").read_text(encoding="utf-8"))
     apks = validate_assets(dist, manifest)
-    with TemporaryDirectory(prefix="qthrone-release-") as directory:
+    with TemporaryDirectory(prefix="rawline-release-") as directory:
         directory = Path(directory)
         body = directory / "notes.md"
         body.write_text(release_notes(notes, manifest), encoding="utf-8", newline="\n")

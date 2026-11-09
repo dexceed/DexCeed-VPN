@@ -494,12 +494,12 @@
     <string name="backup_error_foreign_key">Відновлена таблиця %s посилається на відсутні рядки.</string>
     <string name="backup_error_missing_column">У таблиці %1$s резервної копії немає стовпця %2$s.</string>
     <string name="backup_error_missing_table">У резервній копії немає таблиці %s.</string>
-    <string name="backup_error_not_backup">Це не дійсний файл резервної копії Throne.</string>
+    <string name="backup_error_not_backup">Це не дійсний файл резервної копії DexCeed VPN.</string>
     <string name="backup_error_nothing">Ця резервна копія не містить даних для відновлення.</string>
     <string name="backup_error_version">Непідтримувана версія формату резервної копії: %d.\nМожливо, її створено новішою версією застосунку.</string>
     <string name="backup_failed">Не вдалося створити резервну копію: %s</string>
-    <string name="backup_local_summary">Резервні копії використовують формат Throne desktop (.thrbackup): їх відновлює будь-який із застосунків. Облікові дані WebDAV лишаються на цьому пристрої.</string>
-    <string name="backup_open_label">Відновити резервну копію Throne</string>
+    <string name="backup_local_summary">Резервні копії використовують формат DexCeed VPN desktop (.rwlbackup): їх відновлює будь-який із застосунків. Облікові дані WebDAV лишаються на цьому пристрої.</string>
+    <string name="backup_open_label">Відновити резервну копію DexCeed VPN</string>
     <string name="backup_part_otp">OTP-профілі (на Android не відновлюються)</string>
     <string name="backup_part_profiles">Профілі (групи та проксі)</string>
     <string name="backup_part_routes">Маршрутизаційні профілі</string>
@@ -526,7 +526,7 @@
     <string name="backup_warn_moved_profiles">%d профілів з відсутньою групою переміщено в іншу групу.</string>
     <string name="backup_warn_orphan_rules">Пропущено %d правил відсутніх маршрутизаційних профілів.</string>
     <string name="backup_warn_orphan_tabs">Видалено %d позицій вкладок без групи.</string>
-    <string name="backup_warn_raw_routes">%d необроблених маршрутизаційних профілів із Throne desktop збережено лише для читання; Android не може їх використовувати.</string>
+    <string name="backup_warn_raw_routes">%d необроблених маршрутизаційних профілів із DexCeed VPN desktop збережено лише для читання; Android не може їх використовувати.</string>
     <string name="backup_warn_rows_skipped">Пропущено %1$d недійсних рядків із %2$s.</string>
     <string name="backup_warn_unlisted_profiles">%d профілів, відсутніх у списку групи, додано в кінець.</string>
     <string name="backup_warn_untabbed_groups">%d груп без позиції вкладки додано в кінець.</string>
@@ -870,7 +870,7 @@
     <string name="profiles_appearance">Вигляд</string>
     <string name="profiles_copy_links">Копіювати посилання</string>
     <string name="profiles_copy_share_links">Посилання для обміну</string>
-    <string name="profiles_copy_throne_links">Посилання Throne</string>
+    <string name="profiles_copy_rawline_links">Посилання DexCeed VPN</string>
     <string name="profiles_delete_failed">Не вдалося видалити профілі.</string>
     <string name="profiles_empty">У цій групі немає профілів</string>
     <string name="profiles_empty_hint">Скористайтеся кнопкою «Додати профіль» на панелі інструментів, щоб імпортувати з буфера обміну, файлу чи QR-коду або створити новий. Скопійований URL підписки теж можна додати як підписку.</string>
@@ -959,7 +959,7 @@
     <string name="route_import_invalid_title">Недійсний ввід</string>
     <string name="route_import_note">Примітка:</string>
     <string name="route_import_parse_failed">Не вдалося розібрати посилання:\n%s</string>
-    <string name="route_import_paste_hint">Вставте посилання маршруту Throne, посилання remoteRoute, блок base64 або масив правил JSON</string>
+    <string name="route_import_paste_hint">Вставте посилання маршруту DexCeed VPN, посилання remoteRoute, блок base64 або масив правил JSON</string>
     <string name="route_import_paste_title">Імпорт маршрутизаційного профілю</string>
     <string name="route_import_prompt">Додати цей маршрутизаційний профіль?\n\nІм’я: %s</string>
     <string name="route_import_title">Імпорт маршрутизаційного профілю</string>
@@ -1003,12 +1003,12 @@
     <string name="route_profile_rules">Правила (%d)</string>
     <string name="route_profile_title">Маршрутний профіль</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (посилання throne://route, base64 або JSON)</string>
+    <string name="route_profile_url_hint">https://… (посилання rawline://route, base64 або JSON)</string>
     <string name="route_profiles">Маршрутизаційні профілі</string>
     <string name="route_profiles_sum">Створення, редагування, імпорт і завантаження маршрутизаційних профілів</string>
-    <string name="route_raw_not_usable">Необроблені маршрутизаційні профілі з Throne desktop неможливо використовувати на Android.</string>
-    <string name="route_raw_notice">Цей необроблений маршрутизаційний профіль створено в Throne desktop. Його збережено без змін, щоб резервні копії повернули його на робочий стіл; Android не може його редагувати чи використовувати.</string>
-    <string name="route_raw_summary">Необроблений (Throne desktop) · лише читання</string>
+    <string name="route_raw_not_usable">Необроблені маршрутизаційні профілі з DexCeed VPN desktop неможливо використовувати на Android.</string>
+    <string name="route_raw_notice">Цей необроблений маршрутизаційний профіль створено в DexCeed VPN desktop. Його збережено без змін, щоб резервні копії повернули його на робочий стіл; Android не може його редагувати чи використовувати.</string>
+    <string name="route_raw_summary">Необроблений (DexCeed VPN desktop) · лише читання</string>
     <string name="route_raw_view">Перегляд</string>
     <string name="route_refresh_repo">Оновити список репозиторіїв</string>
     <string name="route_remote_add_prompt">Додати ці віддалені маршрутизаційні профілі?</string>
@@ -1120,7 +1120,7 @@
     <string name="settings_appearance">Вигляд</string>
     <string name="settings_appearance_sum">Тема, мова, список профілів, сповіщення</string>
     <string name="settings_backup">Резервне копіювання та відновлення</string>
-    <string name="settings_backup_sum">Файли .thrbackup, спільні з Throne desktop, локальні та WebDAV</string>
+    <string name="settings_backup_sum">Файли .rwlbackup, спільні з DexCeed VPN desktop, локальні та WebDAV</string>
     <string name="settings_core">Ядро</string>
     <string name="settings_core_sum">Ведення журналу, статистика, Clash API, безпека, NTP</string>
     <string name="settings_dns">DNS</string>
@@ -1272,7 +1272,7 @@
     <string name="test_panel_title">%1$s · %2$s</string>
     <string name="test_panel_unnamed">Профіль %d</string>
     <string name="test_panel_working">Працює</string>
-    <string name="throne_link">Посилання Throne</string>
+    <string name="rawline_link">Посилання DexCeed VPN</string>
     <string name="tls_fragment">Фрагментація TLS Client Hello</string>
     <string name="tls_fragment_fallback_delay">Затримка відкату фрагментації</string>
     <string name="tls_record_fragment">Фрагментація записів TLS</string>
@@ -1401,7 +1401,7 @@
     <string name="webdav_choose_backup">Вибрати резервну копію</string>
     <string name="webdav_downloading">Завантаження з WebDAV…</string>
     <string name="webdav_listing">Читання теки WebDAV…</string>
-    <string name="webdav_no_backups">У %s не знайдено файлів .thrbackup.</string>
+    <string name="webdav_no_backups">У %s не знайдено файлів .rwlbackup.</string>
     <string name="webdav_uploading">Завантаження в WebDAV…</string>
     <string name="widget_connected">Підключено</string>
     <string name="widget_next">Наступний сервер</string>

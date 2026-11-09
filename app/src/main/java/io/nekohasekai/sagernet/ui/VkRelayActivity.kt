@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -10,10 +10,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.preference.*
-import app.qthrone.mobile.R
-import app.qthrone.mobile.bg.carrier.VkRelayAccount
-import app.qthrone.mobile.bg.carrier.VkRelayLogin
-import app.qthrone.mobile.database.DataStore
+import app.rawline.mobile.R
+import app.rawline.mobile.bg.carrier.VkRelayAccount
+import app.rawline.mobile.bg.carrier.VkRelayLogin
+import app.rawline.mobile.database.DataStore
 import moe.matsuri.nb4a.ui.SimpleMenuPreference
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
@@ -22,7 +22,7 @@ class VkRelayActivity : ThemedActivity() {
     private var web: WebView? = null
     @SuppressLint("SetJavaScriptEnabled") override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen) }
         val toolbar = Toolbar(this).apply {
             title = "Настройки VK-релея"; setTitleTextColor(MobilePalette.text)
             setNavigationIcon(R.drawable.baseline_arrow_back_24); setNavigationOnClickListener { finish() }
@@ -77,11 +77,11 @@ class VkRelayActivity : ThemedActivity() {
                     @JavascriptInterface fun onLoginError() {
                         runOnUiThread {
                             val current=web?.url
-                            if(current != null && runCatching { app.qthrone.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(current)) }.getOrDefault(false))
+                            if(current != null && runCatching { app.rawline.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(current)) }.getOrDefault(false))
                                 retryLogin()
                         }
                     }
-                },"QThroneVkLogin")
+                },"RawlineVkLogin")
                 webChromeClient = object : WebChromeClient() {
                     override fun onJsAlert(view: WebView?,url: String?,message: String?,result: JsResult?): Boolean {
                         if(message.orEmpty().contains("Unknown method",ignoreCase=true)) {
@@ -94,7 +94,7 @@ class VkRelayActivity : ThemedActivity() {
                         popup.webViewClient=object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(child: WebView,request: WebResourceRequest): Boolean {
                                 val target=request.url.toString()
-                                if(runCatching { app.qthrone.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(target)) }.getOrDefault(false))
+                                if(runCatching { app.rawline.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(target)) }.getOrDefault(false))
                                     view.loadUrl(target,VkRelayLogin.headers)
                                 child.destroy();return true
                             }
@@ -106,7 +106,7 @@ class VkRelayActivity : ThemedActivity() {
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView,url: String?) {
                         retryingLogin=false
-                        if(url != null && runCatching { app.qthrone.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(url)) }.getOrDefault(false))
+                        if(url != null && runCatching { app.rawline.mobile.bg.carrier.VkRelayOAuth.trustedHttps(java.net.URI(url)) }.getOrDefault(false))
                             view.evaluateJavascript(VkRelayLogin.errorWatcher,null)
                         if(!completedLogin && !VkRelayLogin.awaitingLogin(url.orEmpty()) && cookies().values.any { value -> value.split(';').any { it.trim().startsWith("remixsid=") && it.substringAfter('=').trim().length >= 8 } }) {
                             completedLogin=true
@@ -153,7 +153,7 @@ class VkRelayActivity : ThemedActivity() {
             preferenceScreen.addPreference(account);VkRelayPreferences.bind(this,account)
             val deploy = PreferenceCategory(requireContext()).apply { title = "Управление серверами" }
             preferenceScreen.addPreference(deploy)
-            for(kind in listOf("qwdtt","csqtt","wdttplus")) deploy.addPreference(Preference(requireContext()).apply {
+            for(kind in listOf("mrtt","qwdtt","csqtt","wdttplus","freeturn")) deploy.addPreference(Preference(requireContext()).apply {
                 title = "Деплой " + DeployActivity.title(kind)
                 setIcon(R.drawable.ic_mobile_core);widgetLayoutResource=R.layout.qmobile_preference_arrow
                 fragment=DeployListFragment::class.java.name

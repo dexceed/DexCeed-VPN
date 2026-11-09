@@ -1,17 +1,18 @@
-package app.qthrone.mobile.route
+package app.rawline.mobile.route
 
-import app.qthrone.mobile.outbound.json.JsonArray
-import app.qthrone.mobile.outbound.json.JsonInput
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.json.JsonValues
-import app.qthrone.mobile.outbound.json.JsonWriter
-import app.qthrone.mobile.outbound.link.Base64Strict
+import app.rawline.mobile.outbound.json.JsonArray
+import app.rawline.mobile.outbound.json.JsonInput
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.json.JsonValues
+import app.rawline.mobile.outbound.json.JsonWriter
+import app.rawline.mobile.outbound.link.Base64Strict
 
 /** The desktop's route share formats (RouteProfile.cpp:438-627). */
 object RouteShare {
-    const val ROUTE_LINK_PREFIX = "throne://route/"
-    const val REMOTE_ROUTE_LINK_PREFIX = "throne://remoteroute/"
-    private const val KIND = "throne-route-profile"
+    const val ROUTE_LINK_PREFIX = "rawline://route/"
+    const val REMOTE_ROUTE_LINK_PREFIX = "rawline://remoteroute/"
+    private const val KIND = "rawline-route-profile"
+    private const val OLD_KIND = "throne-route-profile"
 
     /** Keys whose numbers the desktop writes (port lists, ip_version, override_port) and must read back (D12). */
     private val NUMERIC_KEYS = setOf("port", "source_port", "ip_version", "override_port")
@@ -60,7 +61,7 @@ object RouteShare {
         ROUTE_LINK_PREFIX + Base64Strict.encode(JsonWriter.write(toShareObject(p, profileName)), urlSafe = true, padding = false)
 
     /**
-     * FromShareInput (RouteProfile.cpp:491-586): a throne://route link (any case), share JSON, base64url or standard
+     * FromShareInput (RouteProfile.cpp:491-586): a rawline://route link (any case), share JSON, base64url or standard
      * base64 of it with or without padding, or a legacy rule array. Raw profiles are refused; endpoints and endpoint
      * rules are dropped with a warning (D11), as are rules with fields Android does not support ([parseRuleObject]).
      * Rule outbound names resolve through [profileIdByName].
@@ -73,6 +74,7 @@ object RouteShare {
             if (profile == null) failure("Routing off is only supported for a subscription") else Imported(profile, "", emptyList(), false)
         } catch (e: Exception) { failure(e.message ?: "Invalid routing profile") }
         if (input.isEmpty()) return failure("Empty input")
+        input = UrlText.currentScheme(input)
         if (input.startsWith(ROUTE_LINK_PREFIX, ignoreCase = true)) {
             input = UrlText.deepLinkPayload(input, ROUTE_LINK_PREFIX.length)
             if (input.isEmpty()) return failure("Deep link has no data")
@@ -80,7 +82,7 @@ object RouteShare {
         val doc = parseDocument(input)
             ?: parseDocument(String(Base64Strict.decodeLenient(input, urlSafe = true), Charsets.UTF_8))
             ?: parseDocument(String(Base64Strict.decodeLenient(input, urlSafe = false), Charsets.UTF_8))
-            ?: return failure("Input is not valid JSON, base64, or a Throne route link")
+            ?: return failure("Input is not valid JSON, base64, or a Rawline route link")
         val warnings = ArrayList<String>()
         return when (doc) {
             is JsonObject -> fromObject(doc, warnings, profileIdByName)
@@ -90,11 +92,11 @@ object RouteShare {
     }
 
     /**
-     * FromRemoteRoutesLink (RouteProfile.cpp:588-627): null when [text] is not a throne://remoteroute link; for an
+     * FromRemoteRoutesLink (RouteProfile.cpp:588-627): null when [text] is not a rawline://remoteroute link; for an
      * invalid one an [IllegalArgumentException] carries the desktop's error text, so a returned list is never empty.
      */
     fun fromRemoteRoutesLink(text: String): List<RemoteEntry>? {
-        val input = text.trim()
+        val input = UrlText.currentScheme(text.trim())
         if (!input.startsWith(REMOTE_ROUTE_LINK_PREFIX, ignoreCase = true)) return null
         val base64 = UrlText.deepLinkPayload(input, REMOTE_ROUTE_LINK_PREFIX.length)
         if (base64.isEmpty()) throw IllegalArgumentException("Deep link has no data")
@@ -124,7 +126,7 @@ object RouteShare {
     }
 
     private fun fromObject(root: JsonObject, warnings: MutableList<String>, profileIdByName: (String) -> Long?): Imported {
-        if (root.string("kind") != KIND) return failure("Unrecognized route object")
+        if (root.string("kind") != KIND && root.string("kind") != OLD_KIND) return failure("Unrecognized route object")
         if (root.bool("raw")) return failure("raw routing profiles are not supported on Android")
         val profile = RouteProfile()
         profile.name = root.string("name")

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.update
+package app.rawline.mobile.update
 
 /** Semantic-version precedence (semver.org §11) of release tags such as `v1.7.0` and `1.7.0-pre.12`. */
 object Semver {
@@ -15,6 +15,10 @@ object Semver {
         if (pre.any { it.isEmpty() }) return null
         return Version(numbers + List(3 - numbers.size) { 0L }, pre)
     }
+
+    /** DexCeed releases retain the v-prefixed tags understood by existing installations. */
+    const val TAG_PREFIX = "v"
+    fun ofTag(tag: String): Version? = if (tag.startsWith(TAG_PREFIX)) parse(tag.removePrefix(TAG_PREFIX)) else null
 
     fun compare(a: Version, b: Version): Int {
         for (i in 0 until 3) {

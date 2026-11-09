@@ -1,11 +1,11 @@
-package app.qthrone.mobile.database
+package app.rawline.mobile.database
 
 import androidx.room.InvalidationTracker
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.runOnIoDispatcher
-import app.qthrone.mobile.route.RouteDns
-import app.qthrone.mobile.route.RouteProfile
-import app.qthrone.mobile.route.RuleSetCatalog
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.runOnIoDispatcher
+import app.rawline.mobile.route.RouteDns
+import app.rawline.mobile.route.RouteProfile
+import app.rawline.mobile.route.RuleSetCatalog
 import java.io.File
 import java.util.concurrent.Callable
 import java.util.concurrent.CopyOnWriteArrayList
@@ -149,7 +149,19 @@ object RouteManager {
     private fun load(): List<RouteProfile> = SagerDatabase.instance.runInTransaction(Callable {
         val rules = dao.allRules().groupBy { it.routeProfileId }
         dao.allProfiles().map { it.toModel(rules[it.id].orEmpty()) }
-    })
+    }).let { profiles ->
+        val order = savedOrder().withIndex().associate { (index, id) -> id to index }
+        // Profiles added since keep their place after the arranged ones.
+        profiles.sortedBy { order[it.id] ?: Int.MAX_VALUE }
+    }
+
+    private fun savedOrder() = DataStore.configurationStore.getString(ORDER_KEY).orEmpty().split(',').mapNotNull { it.toLongOrNull() }
+
+    fun saveOrder(ids: List<Long>) {
+        DataStore.configurationStore.putString(ORDER_KEY, ids.joinToString(","))
+    }
+
+    private const val ORDER_KEY = "qmobileRouteOrder"
 
     private fun observe() {
         synchronized(this) {

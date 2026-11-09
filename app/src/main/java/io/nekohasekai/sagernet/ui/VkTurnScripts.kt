@@ -1,5 +1,5 @@
 // Adapted from SpaceNeuroX/proxy-turn-vk-android a296c57 (GPL-3.0).
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 internal object VkTurnScripts {
     fun joinUrlCandidates(hash: String): List<String> = listOf(
@@ -21,8 +21,8 @@ internal object VkTurnScripts {
                     ts = data.response.turn_server;
                 }
                 if (ts && ts.username && ts.credential && ts.urls) {
-                    window.__qthroneTurnServer=JSON.stringify(ts);
-                    if(window.QThroneVkTurn) window.QThroneVkTurn.postMessage(JSON.stringify(ts));
+                    window.__rawlineTurnServer=JSON.stringify(ts);
+                    if(window.RawlineVkTurn) window.RawlineVkTurn.postMessage(JSON.stringify(ts));
                 }
             }
 

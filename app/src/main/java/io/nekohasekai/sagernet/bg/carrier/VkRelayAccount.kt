@@ -1,13 +1,13 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.AtomicFile
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.database.SagerDatabase
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.GroupRepo
-import app.qthrone.mobile.outbound.types.Qwdtt
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.database.SagerDatabase
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.GroupRepo
+import app.rawline.mobile.outbound.types.Qwdtt
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,7 +23,7 @@ import javax.crypto.spec.GCMParameterSpec
 /** Account credentials stay outside profiles, exports, backups and logs, shared with :bg. */
 object VkRelayAccount {
     const val DEFAULT_SOURCE = "vkRelayDefaultHashSource"
-    private const val ALIAS = "qThrone.vk.relay"
+    private const val ALIAS = "Rawline.vk.relay"
     private val hashCreationLock = Any()
     private fun storage() = AtomicFile(File(app.noBackupFilesDir,"vk-relay-account"))
     private fun key(): SecretKey {
@@ -72,7 +72,9 @@ object VkRelayAccount {
     data class UiInfo(val linked: Boolean,val needsRelink: Boolean,val displayName: String,val hashes: Int)
     fun uiInfo(): UiInfo {
         val session=read()
-        return UiInfo(linked(),needsRelink(),session.optString("user"),session.optJSONArray("hashes")?.length() ?: 0)
+        val stored=session.optJSONObject("cookies")
+        val id=session.optString("user").ifBlank { VkRelayOAuth.userIdFromCookies(stored?.keys()?.asSequence()?.map { stored.optString(it) }?.toList().orEmpty()) }
+        return UiInfo(linked(),needsRelink(),id,session.optJSONArray("hashes")?.length() ?: 0)
     }
     fun refreshIdentity() {
         val session = read()
@@ -101,6 +103,12 @@ object VkRelayAccount {
             val db = SagerDatabase.instance
             db.runInTransaction {
                 for(profile in SagerDatabase.proxyDao.getAll()) {
+                    (profile.outbound as? app.rawline.mobile.outbound.types.Freeturn)?.let { freeturn ->
+                        freeturn.hashSource = "manual"
+                        profile.putOutbound(freeturn)
+                        SagerDatabase.proxyDao.updateOutbound(profile.id,profile.type,profile.name,profile.outboundJson)
+                        groups.add(profile.groupId)
+                    }
                     val outbound = profile.outbound as? Qwdtt ?: continue
                     outbound.hashSource = "manual"
                     outbound.hashSourceChosen = true
@@ -138,6 +146,7 @@ object VkRelayAccount {
         val state = java.util.UUID.randomUUID().toString()
         val http = client.newBuilder().followRedirects(false).followSslRedirects(false).build()
         var url = authorizeUrl(state)
+        val fresh = LinkedHashMap<String,String>()
         // qWDTT avoids non-local returns from inline loops here because of ART verifier failures.
         for(step in 0 until 12) {
             val uri = java.net.URI(url)
@@ -145,9 +154,13 @@ object VkRelayAccount {
             val request = Request.Builder().url(url)
                 .header("User-Agent",session.optString("userAgent"))
                 .header("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-            val header = VkRelayRequests.cookieHeader(cookies.keys().asSequence().associateWith { cookies.optString(it) })
+            val saved = VkRelayRequests.cookieHeader(cookies.keys().asSequence().associateWith { cookies.optString(it) })
+            val header = (saved.split("; ").filter { it.isNotBlank() && it.substringBefore('=') !in fresh } + fresh.map { "${it.key}=${it.value}" }).joinToString("; ")
             if(header.isNotBlank()) request.header("Cookie",header)
             val next = http.newCall(request.build()).execute().use { response ->
+                for(cookie in response.headers("Set-Cookie")) cookie.substringBefore(';').let { pair ->
+                    if(pair.contains('=')) fresh[pair.substringBefore('=').trim()] = pair.substringAfter('=')
+                }
                 val location = response.header("Location")
                 if(location != null) response.request.url.resolve(location)?.toString()
                 else if(response.isSuccessful) VkRelayOAuth.nextAuthorizeUrl(response.body?.string().orEmpty())
@@ -155,6 +168,7 @@ object VkRelayAccount {
             } ?: return null
             val fields = VkRelayOAuth.tokenFields(next,state)
             if(fields != null) {
+                VkRelayOAuth.userId(next)?.let { session.put("user",it) }
                 session.put("token",fields.first)
                 session.put("expires",if(fields.second > 0) System.currentTimeMillis()+fields.second*1000 else Long.MAX_VALUE)
                 writeCurrent(session)
@@ -181,6 +195,18 @@ object VkRelayAccount {
 
     const val MAX_HASHES = 30
     fun cachedHashes(): List<String> = read().optJSONArray("hashes")?.let { list -> (0 until list.length()).map(list::getString) }.orEmpty()
+    /** Which created hashes a server's profiles use; kept here so they stay out of profiles, exports and share links. */
+    fun selectionKey(type: String,server: String,port: Int) = "$type|$server:$port"
+    fun selectedHashes(key: String): List<String> {
+        val session=read()
+        val created=session.optJSONArray("hashes")?.let { list -> (0 until list.length()).map(list::getString) }.orEmpty()
+        return session.optJSONObject("selectedHashes")?.optJSONArray(key)?.let { list -> (0 until list.length()).map(list::getString) }.orEmpty().filter { it in created }
+    }
+    @Synchronized fun selectHashes(key: String,hashes: List<String>) {
+        val session=read()
+        session.put("selectedHashes",(session.optJSONObject("selectedHashes") ?: JSONObject()).put(key,org.json.JSONArray(hashes)))
+        writeCurrent(session)
+    }
     /**
      * Removes hashes and ends the VK calls behind them. A call VK refuses to end, or one created before call ids
      * were kept, is still removed here; returns how many were left running.
@@ -207,7 +233,7 @@ object VkRelayAccount {
         writeCurrent(session)
         unfinished
     }
-    fun hashes(count: Int, interactive: Boolean=true): List<String> {
+    fun hashes(count: Int, interactive: Boolean=true, onProgress: (List<String>) -> Unit={}): List<String> {
       synchronized(hashCreationLock) {
         require(count in 1..MAX_HASHES)
         val session = read()
@@ -248,7 +274,7 @@ object VkRelayAccount {
             call.optString("call_id").takeIf { it.isNotEmpty() }?.let { id ->
                 session.put("callIds",(session.optJSONObject("callIds") ?: JSONObject()).put(hash,id))
             }
-            session.put("hashes",org.json.JSONArray(hashes)); writeCurrent(session)
+            session.put("hashes",org.json.JSONArray(hashes)); writeCurrent(session); onProgress(hashes.toList())
         }
         return hashes.take(count)
       }

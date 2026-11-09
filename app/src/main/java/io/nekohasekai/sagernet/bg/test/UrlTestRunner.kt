@@ -1,18 +1,18 @@
-package app.qthrone.mobile.bg.test
+package app.rawline.mobile.bg.test
 
-import app.qthrone.mobile.bg.CoreRuntime
-import app.qthrone.mobile.bg.proto.CoreConfig
-import app.qthrone.mobile.bg.proto.exitsThroughVpn
-import app.qthrone.mobile.database.ProfileManager
-import app.qthrone.mobile.database.ProxyEntity
-import app.qthrone.mobile.ktx.readableMessage
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.bg.carrier.NativeCarrier
-import app.qthrone.mobile.bg.carrier.QwdttPing
-import app.qthrone.core.mobile.Mobile
-import app.qthrone.core.mobile.TestRequest
-import app.qthrone.core.mobile.URLTestHandler
+import app.rawline.mobile.bg.CoreRuntime
+import app.rawline.mobile.bg.proto.CoreConfig
+import app.rawline.mobile.bg.proto.exitsThroughVpn
+import app.rawline.mobile.database.ProfileManager
+import app.rawline.mobile.database.ProxyEntity
+import app.rawline.mobile.ktx.readableMessage
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.bg.carrier.NativeCarrier
+import app.rawline.mobile.bg.carrier.QwdttPing
+import app.rawline.core.mobile.Mobile
+import app.rawline.core.mobile.TestRequest
+import app.rawline.core.mobile.URLTestHandler
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.atomic.AtomicBoolean
-import app.qthrone.mobile.outbound.types.Qwdtt
+import app.rawline.mobile.outbound.types.Qwdtt
 
 /**
  * URL latency tests (runUrlProbe, TestRunner.cpp:159-232): results stream as the core reports them, then a failed
@@ -32,7 +32,7 @@ internal class UrlTestRunner(session: TestSession) : LatencySweep(session) {
     override suspend fun run(profiles:List<ProxyEntity>) = coroutineScope {
         val (all,regular)=profiles.partition { it.type in NATIVE_TYPES }
         // qWDTT and CSQTT both ask VK for credentials: one budget for the two, so a sweep stays below VK's limits.
-        val (vk,native)=all.partition { it.type in listOf("qwdtt","csqtt","wdttplus") }
+        val (vk,native)=all.partition { it.type in listOf("qwdtt","csqtt","mrtt","wdttplus","freeturn") }
         launch { super.run(regular) }
         launch {
             runIndependentProbes(vk,MAX_PARALLEL_PROBES,{ session.cancelled },{ (it.outbound as? Qwdtt)?.probeSessionKey() },{ (it.outbound as? Qwdtt)?.vkCallKey() }) { profile ->
@@ -190,7 +190,7 @@ internal class UrlTestRunner(session: TestSession) : LatencySweep(session) {
         const val ERROR_NOT_RUNNING = "instance is not running"
 
         /** Profiles backed by a native client process instead of a sing-box outbound. */
-        val NATIVE_TYPES = listOf("qwdtt","csqtt","wdttplus","openflux","openfluxkey","olcrtc","dnstt","vaydns","slipstream","masterdns","cottendns","soar","s3bypass","sstp")
+        val NATIVE_TYPES = listOf("qwdtt","csqtt","mrtt","wdttplus","freeturn","openflux","openfluxkey","olcrtc","dnstt","vaydns","slipstream","masterdns","cottendns","soar","s3bypass","sstp")
 
         /** VK access for a ping: hashes, credentials and an automatic check (the desktop's desktopPingAuthBudget). */
         const val QWDTT_AUTH_BUDGET_MS = 90_000L

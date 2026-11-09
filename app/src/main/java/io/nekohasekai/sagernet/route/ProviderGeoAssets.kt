@@ -1,10 +1,10 @@
-package app.qthrone.mobile.route
+package app.rawline.mobile.route
 
-import app.qthrone.mobile.ktx.*
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.bg.XrayGeoAssets
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.core.mobile.Mobile
+import app.rawline.mobile.ktx.*
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.bg.XrayGeoAssets
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.core.mobile.Mobile
 import java.io.File
 import java.security.MessageDigest
 import kotlinx.coroutines.*
@@ -17,6 +17,7 @@ object ProviderGeoAssets {
     private val action get() = app.packageName + ".PROVIDER_GEO_STATUS"
 
     private fun show(gid: Long, value: Status) {
+        if (value.complete && !states.value.containsKey(gid)) return
         synchronized(states) { states.value = states.value + (gid to value) }
         if (value.complete) expiryScope.launch {
             delay(5000)

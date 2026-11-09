@@ -15,7 +15,7 @@ properties = dict(line.split('=', 1) for line in (root / 'nb4a.properties').read
 
 
 def same_transport_sources(ref, built):
-    """The transports take only qwdtt/ and script/ from qThrone, so a core pin with identical trees reuses them."""
+    """The transports take only qwdtt/ and script/ from Rawline, so a core pin with identical trees reuses them."""
     if ref == built:
         return True
     with tempfile.TemporaryDirectory() as repo:
@@ -141,6 +141,67 @@ for item in sstp['archives']:
     (license_dir / 'SSTP-LICENSE').write_bytes(files['SSTP-LICENSE'])
     (license_dir / 'SSTP-SOURCES.txt').write_bytes(files['SOURCES.txt'])
     print('Verified SSTP transport:', item['abi'])
+
+assert 'freeturn' in lock, 'Build and pin FreeTurn before packaging this version'
+freeturn = lock['freeturn']
+source_paths = {p.relative_to(root).as_posix() for p in (root / 'carriers/freeturn').glob('*.go')}
+source_paths.add('scripts/build_freeturn.sh')
+assert source_paths == set(freeturn['inputs']), 'Rebuild FreeTurn after adding or removing source files'
+for name, expected in freeturn['inputs'].items():
+    assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, 'Rebuild FreeTurn after changing ' + name
+assert {item['abi'] for item in freeturn['archives']} == {item['abi'] for item in lock['archives']}
+for item in freeturn['archives']:
+    with urllib.request.urlopen(item['url'], timeout=60) as response:
+        archive = response.read()
+    assert hashlib.sha256(archive).hexdigest() == item['sha256'], 'FreeTurn archive checksum mismatch'
+    files = {}
+    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+        for member in tar.getmembers():
+            assert member.isfile() and '/' not in member.name and chr(92) not in member.name
+            assert member.name not in files, 'Duplicate FreeTurn archive entry'
+            files[member.name] = tar.extractfile(member).read()
+    assert set(files) == {'libfreeturn.so', 'FreeTurn-LICENSE', 'FreeTurn.json', 'SOURCES.txt', 'SHA256SUMS'}
+    provenance = json.loads(files['FreeTurn.json'])
+    assert provenance == {'build_commit': freeturn['build_commit'], 'abi': item['abi'], 'inputs': freeturn['inputs']}, 'FreeTurn build provenance mismatch'
+    assert files['SOURCES.txt'].decode() == item['sources']
+    digest, binary = files['SHA256SUMS'].decode().split()
+    assert binary == 'libfreeturn.so' and hashlib.sha256(files[binary]).hexdigest() == digest, 'FreeTurn binary checksum mismatch'
+    (root / 'deployment/carriers' / item['abi'] / binary).write_bytes(files[binary])
+    license_dir = root / 'app/src/main/assets/carrier-licenses' / item['abi']
+    (license_dir / 'FreeTurn-LICENSE').write_bytes(files['FreeTurn-LICENSE'])
+    (license_dir / 'FreeTurn-SOURCES.txt').write_bytes(files['SOURCES.txt'])
+    print('Verified FreeTurn transport:', item['abi'])
+
+assert 'mrtt' in lock, 'Build and pin MRTT before packaging this version'
+mrtt = lock['mrtt']
+source_paths = {p.relative_to(root).as_posix() for p in (root / 'carriers/mrtt').glob('*.go')}
+source_paths.update({'scripts/build_mrtt.sh', 'scripts/prepare_private_csqtt.py'})
+assert source_paths == set(mrtt['inputs']), 'Rebuild MRTT after adding or removing source files'
+for name, expected in mrtt['inputs'].items():
+    assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, 'Rebuild MRTT after changing ' + name
+assert {item['abi'] for item in mrtt['archives']} == {item['abi'] for item in lock['archives']}
+for item in mrtt['archives']:
+    with urllib.request.urlopen(item['url'], timeout=60) as response:
+        archive = response.read()
+    assert hashlib.sha256(archive).hexdigest() == item['sha256'], 'MRTT archive checksum mismatch'
+    files = {}
+    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+        for member in tar.getmembers():
+            assert member.isfile() and '/' not in member.name and chr(92) not in member.name
+            assert member.name not in files, 'Duplicate MRTT archive entry'
+            files[member.name] = tar.extractfile(member).read()
+    assert set(files) == {'libmrtt.so', 'libmrtt_client.so', 'MRTT-LICENSE', 'MRTT.json', 'SOURCES.txt', 'SHA256SUMS'}
+    provenance = json.loads(files['MRTT.json'])
+    assert provenance == {'build_commit': mrtt['build_commit'], 'abi': item['abi'], 'mrtt_commit': mrtt['mrtt_commit'], 'core_commit': mrtt['core_commit'], 'inputs': mrtt['inputs']}, 'MRTT build provenance mismatch'
+    assert files['SOURCES.txt'].decode() == item['sources']
+    for line in files['SHA256SUMS'].decode().splitlines():
+        digest, binary = line.split()
+        assert hashlib.sha256(files[binary]).hexdigest() == digest, 'MRTT binary checksum mismatch'
+        (root / 'deployment/carriers' / item['abi'] / binary).write_bytes(files[binary])
+    license_dir = root / 'app/src/main/assets/carrier-licenses' / item['abi']
+    (license_dir / 'MRTT-LICENSE').write_bytes(files['MRTT-LICENSE'])
+    (license_dir / 'MRTT-SOURCES.txt').write_bytes(files['SOURCES.txt'])
+    print('Verified MRTT transport:', item['abi'])
 
 # CottenDNS, Soar, OpenFlux and OpenFlux Key are pinned apart from the other transports.
 assert 'dns_engines' in lock, 'Build and pin the DNS engines before packaging this version'

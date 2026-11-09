@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_route_new"
-        android:icon="@drawable/ic_baseline_add_road_24"
+        android:icon="@drawable/ic_route_add"
         android:title="@string/route_new"
         app:showAsAction="always">
         <menu>
@@ -13,6 +13,9 @@
             <item
                 android:id="@+id/action_route_new_remote"
                 android:title="@string/route_new_remote" />
+            <item
+                android:id="@+id/action_route_new_provider"
+                android:title="@string/provider_route_new" />
         </menu>
     </item>
     <item

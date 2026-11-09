@@ -11,23 +11,23 @@ import android.os.Process
 import android.system.OsConstants
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.utils.DefaultNetworkListener
-import app.qthrone.mobile.utils.PackageCache
-import app.qthrone.mobile.utils.WifiStateAccess
-import app.qthrone.core.mobile.ConnectionOwner
-import app.qthrone.core.mobile.InterfaceUpdateListener
-import app.qthrone.core.mobile.LocalDNSTransport
-import app.qthrone.core.mobile.Mobile
-import app.qthrone.core.mobile.NetworkInterfaceIterator
-import app.qthrone.core.mobile.PlatformInterface
-import app.qthrone.core.mobile.StringIterator
-import app.qthrone.core.mobile.TunOptions
-import app.qthrone.core.mobile.WIFIState
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.utils.DefaultNetworkListener
+import app.rawline.mobile.utils.PackageCache
+import app.rawline.mobile.utils.WifiStateAccess
+import app.rawline.core.mobile.ConnectionOwner
+import app.rawline.core.mobile.InterfaceUpdateListener
+import app.rawline.core.mobile.LocalDNSTransport
+import app.rawline.core.mobile.Mobile
+import app.rawline.core.mobile.NetworkInterfaceIterator
+import app.rawline.core.mobile.PlatformInterface
+import app.rawline.core.mobile.StringIterator
+import app.rawline.core.mobile.TunOptions
+import app.rawline.core.mobile.WIFIState
 import kotlinx.coroutines.runBlocking
 import moe.matsuri.nb4a.net.LocalResolverImpl
 import java.net.Inet6Address
@@ -36,8 +36,8 @@ import java.net.InterfaceAddress
 import java.net.NetworkInterface
 import java.util.Collections
 import java.util.WeakHashMap
-import app.qthrone.core.mobile.NetworkInterface as CoreNetworkInterface
-import app.qthrone.core.mobile.Notification as CoreNotification
+import app.rawline.core.mobile.NetworkInterface as CoreNetworkInterface
+import app.rawline.core.mobile.Notification as CoreNotification
 
 class NativeInterface : PlatformInterface {
 
@@ -253,7 +253,7 @@ class NativeInterface : PlatformInterface {
             )
         }
         val builder = NotificationCompat.Builder(app, channel)
-            .setSmallIcon(R.drawable.ic_throne_tile)
+            .setSmallIcon(R.drawable.ic_rawline_tile)
             .setContentTitle(notification.title)
             .setContentText(listOf(notification.subtitle, notification.body).filter { it.isNotBlank() }.joinToString("\n"))
             .setAutoCancel(true)

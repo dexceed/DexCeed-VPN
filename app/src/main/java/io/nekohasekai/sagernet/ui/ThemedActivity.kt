@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.res.Configuration
 import android.graphics.Color
@@ -13,9 +13,9 @@ import androidx.core.graphics.ColorUtils
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.snackbar.Snackbar
-import app.qthrone.mobile.R
-import app.qthrone.mobile.utils.Theme
-import app.qthrone.mobile.widget.applyTopInset
+import app.rawline.mobile.R
+import app.rawline.mobile.utils.Theme
+import app.rawline.mobile.widget.applyTopInset
 
 abstract class ThemedActivity : AppCompatActivity, androidx.preference.PreferenceFragmentCompat.OnPreferenceDisplayDialogCallback {
     constructor() : super()
@@ -35,6 +35,11 @@ abstract class ThemedActivity : AppCompatActivity, androidx.preference.Preferenc
     var lightStatusBar = false
         private set
 
+    /** The new style's icons live in res/drawable-mcc999: only its screens ask for that country code, notifications and widgets never do. */
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(if (MobileStyle.new) newBase.createConfigurationContext(Configuration(newBase.resources.configuration).apply { mcc = 999 }) else newBase)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (!isDialog) {
             Theme.apply(this)
@@ -45,6 +50,11 @@ abstract class ThemedActivity : AppCompatActivity, androidx.preference.Preferenc
         if (!isDialog) enableEdgeToEdge(statusBarStyle(), navigationBarStyle())
 
         super.onCreate(savedInstanceState)
+        MobileScreenMotion.fullFrameRate(window)
+        MobileFocusRing.attach(window)
+        if (!isDialog) MobileScreenMotion.open(this)
+        if (!isDialog) MobileScreenMotion.fadeAfterRecreate(this)
+        if (MobileStyle.new && !isDialog) window.setBackgroundDrawable(MobileHomeBackdrop())
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentViewCreated(manager: androidx.fragment.app.FragmentManager, fragment: androidx.fragment.app.Fragment, view: android.view.View, state: Bundle?) {
@@ -56,6 +66,16 @@ abstract class ThemedActivity : AppCompatActivity, androidx.preference.Preferenc
             }
         },true)
         uiMode = resources.configuration.uiMode
+    }
+
+    override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+        MobileFeedback.onTouchDown(window.decorView, event)
+        return super.dispatchTouchEvent(event)
+    }
+
+    override fun finish() {
+        super.finish()
+        if (!isDialog) MobileScreenMotion.close(this)
     }
 
     override fun onPreferenceDisplayDialog(caller: androidx.preference.PreferenceFragmentCompat, pref: androidx.preference.Preference): Boolean =
@@ -114,9 +134,9 @@ abstract class ThemedActivity : AppCompatActivity, androidx.preference.Preferenc
         setActionTextColor(MobilePalette.accent(this@ThemedActivity))
         view.backgroundTintList=null
         view.background=android.graphics.drawable.GradientDrawable().apply {
-            setColor(MobilePalette.surface)
-            cornerRadius=16*density
-            setStroke(density.toInt().coerceAtLeast(1),ColorUtils.setAlphaComponent(MobilePalette.muted,64))
+            setColor(if(MobileStyle.new) MobilePalette.frosted else MobilePalette.surface)
+            cornerRadius=MobilePalette.cardDp*density
+            setStroke(1,MobilePalette.outline)
         }
         view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).apply {
             maxLines = 10

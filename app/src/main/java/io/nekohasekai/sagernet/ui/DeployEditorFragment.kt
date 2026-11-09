@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.os.Bundle
 import android.view.View
@@ -13,8 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.*
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.*
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -54,7 +54,7 @@ open class DeployEditorFragment : Fragment() {
     override fun onCreateView(inflater: android.view.LayoutInflater,container: ViewGroup?,state: Bundle?): View {
         expanded=state?.getBoolean("consoleExpanded") ?: true
         configExpanded=state?.getBoolean("configExpanded") ?: true
-        scroll=ScrollView(requireContext()).apply { isFillViewport=true;setBackgroundColor(MobilePalette.background) }
+        scroll=ScrollView(requireContext()).apply { isFillViewport=true;setBackgroundColor(MobilePalette.screen) }
         body=column().apply { setPadding(dp(16),dp(8),dp(16),dp(24)) };scroll.addView(body);return scroll
     }
     override fun onViewCreated(view: View,state: Bundle?) { super.onViewCreated(view,state);build() }
@@ -72,11 +72,11 @@ open class DeployEditorFragment : Fragment() {
         return arrow
     }
     private fun heading(parent: LinearLayout,title: String) {
-        parent.addView(TextView(requireContext()).apply { text=title;textSize=16f;setTextColor(MobilePalette.accent(requireContext()));setTypeface(null,android.graphics.Typeface.BOLD);setPadding(0,dp(6),0,dp(6)) })
+        parent.addView(TextView(requireContext()).apply { text=title;textSize=16f;setTextColor(MobilePalette.accent(requireContext()));setTypeface(typeface,android.graphics.Typeface.BOLD);setPadding(0,dp(6),0,dp(6)) })
     }
     private fun card(): LinearLayout {
         val content=column().apply { setPadding(dp(12),dp(8),dp(12),dp(8)) }
-        body.addView(MaterialCardView(requireContext()).apply { radius=dp(5).toFloat();cardElevation=0f;strokeWidth=1;strokeColor=MobilePalette.outline;preventCornerOverlap=false;useCompatPadding=false;setCardBackgroundColor(MobilePalette.surface);addView(content) },LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(8) })
+        body.addView(MaterialCardView(requireContext()).apply { radius=dp(MobilePalette.cardDp).toFloat();cardElevation=0f;strokeWidth=1;strokeColor=MobilePalette.outline;preventCornerOverlap=false;useCompatPadding=false;setCardBackgroundColor(MobilePalette.surface);addView(content) },LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(8) })
         return content
     }
     private fun row(parent: LinearLayout,block: (LinearLayout)->Unit) {
@@ -86,8 +86,8 @@ open class DeployEditorFragment : Fragment() {
         val tile=LinearLayout(requireContext()).apply {
             orientation=LinearLayout.HORIZONTAL;gravity=android.view.Gravity.CENTER_VERTICAL
             setPadding(dp(12),dp(8),dp(12),dp(8));minimumHeight=dp(48)
-            background=android.graphics.drawable.GradientDrawable().apply {
-                setColor(MobilePalette.surface);cornerRadius=dp(5).toFloat();setStroke(1,MobilePalette.outline)
+            background=if(MobileStyle.new) MobilePalette.rowShape(context) else android.graphics.drawable.GradientDrawable().apply {
+                setColor(MobilePalette.surface);cornerRadius=dp(MobilePalette.rowDp).toFloat();setStroke(1,MobilePalette.outline)
             }
             isFocusable=true;contentDescription=listOfNotNull(title,subtitle).joinToString(". ")
             setOnClickListener { click() };MobileFeedback.apply(this)
@@ -104,27 +104,46 @@ open class DeployEditorFragment : Fragment() {
         tile.addView(labels,LinearLayout.LayoutParams(0,-2,1f))
         val entry: View=if(server==null) tile else {
             val delete=ImageButton(requireContext()).apply {
-                setImageResource(R.drawable.ic_mobile_delete);imageTintList=android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.rgb(220,66,61));setPadding(dp(18),dp(18),dp(18),dp(18))
+                setImageResource(R.drawable.ic_mobile_delete)
+                val red=android.graphics.Color.rgb(220,66,61)
+                if(MobileStyle.new) {
+                    imageTintList=android.content.res.ColorStateList.valueOf(red)
+                    background=MobilePalette.actionShape(context,red);MobileFeedback.apply(this)
+                    setPadding(dp(20),dp(12),dp(20),dp(12))
+                } else {
+                    imageTintList=android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+                    setBackgroundColor(red);setPadding(dp(18),dp(18),dp(18),dp(18))
+                }
                 contentDescription="Удалить VPS из списка"
                 setOnClickListener {
-                    if(DeployEngine.state.value.running && DeployEngine.state.value.serverId==server.id) {
+                    if(host.busy(server.id)) {
                         Toast.makeText(context,"Дождитесь завершения операции",Toast.LENGTH_SHORT).show()
                     } else MobileAlertDialogBuilder(requireContext()).setMessage("Удалить VPS из списка? Сервис на сервере останется.")
                         .setPositiveButton("Удалить") { _,_ -> DeployStore.remove(server.id);build() }.setNegativeButton(android.R.string.cancel,null).show()
                 }
             }
             MobileSwipeTile(requireContext(),tile,View(requireContext()),View(requireContext()),delete,deleteOnly=true).apply {
-                background=android.graphics.drawable.GradientDrawable().apply { setColor(MobilePalette.surface);cornerRadius=dp(5).toFloat();setStroke(1,MobilePalette.outline) }
+                // In the new style the glass is the row's alone: a second layer here would show through it.
+                background=android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius=dp(MobilePalette.rowDp).toFloat()
+                    if(MobileStyle.new) setColor(android.graphics.Color.TRANSPARENT) else { setColor(MobilePalette.surface);setStroke(1,MobilePalette.outline) }
+                }
                 clipToOutline=true
                 onOpened={ opened -> openSwipe?.takeIf { it!==opened }?.closeActions();openSwipe=opened }
             }
         }
         body.addView(entry,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(8) })
     }
+    /** The same surface as every other row and button of the new style; the button's own layers would show through the glass. */
+    private fun glassButton(button: MaterialButton,chosen: Boolean) {
+        button.rippleColor=null;button.outlineProvider=null;button.backgroundTintList=null
+        button.background=if(chosen) MobilePalette.selectedShape(requireContext()) else MobilePalette.rowShape(requireContext())
+        MobileFeedback.apply(button)
+        button.setPaddingRelative(dp(12),dp(8),dp(12),dp(8))
+    }
     private fun button(parent: LinearLayout,title: String,icon: Int=0,pair: Boolean=false,click: ()->Unit): MaterialButton {
         val b=MaterialButton(requireContext()).apply {
-            text=title;textSize=16f;setTypeface(null,android.graphics.Typeface.BOLD);isAllCaps=false;maxLines=Int.MAX_VALUE;minimumWidth=0;minimumHeight=dp(48);cornerRadius=dp(5)
+            text=title;textSize=16f;setTypeface(typeface,android.graphics.Typeface.BOLD);isAllCaps=false;maxLines=Int.MAX_VALUE;minimumWidth=0;minimumHeight=dp(48);cornerRadius=dp(5)
             insetTop=0;insetBottom=0;elevation=0f;stateListAnimator=null
             gravity=android.view.Gravity.CENTER_VERTICAL or (if(pair) android.view.Gravity.CENTER_HORIZONTAL else android.view.Gravity.START)
             setPaddingRelative(dp(12),dp(8),dp(12),dp(8))
@@ -136,6 +155,7 @@ open class DeployEditorFragment : Fragment() {
             strokeColor=android.content.res.ColorStateList.valueOf(MobilePalette.outline)
             if(icon!=0) { setIconResource(icon);iconSize=dp(22);iconPadding=dp(12);iconGravity=MaterialButton.ICON_GRAVITY_START }
             setOnClickListener { click() }
+            if(MobileStyle.new) glassButton(this,false)
         }
         parent.addView(b,(if(pair) LinearLayout.LayoutParams(0,-2,1f) else LinearLayout.LayoutParams(-1,-2)).apply {
             topMargin=if(parent===body) 0 else dp(4)
@@ -146,8 +166,9 @@ open class DeployEditorFragment : Fragment() {
     }
     private fun field(parent: LinearLayout,s: DeployServer,key: String,label: String,secret: Boolean=false,number: Boolean=false,pair: Boolean=false): TextInputEditText {
         val box=TextInputLayout(androidx.appcompat.view.ContextThemeWrapper(requireContext(),R.style.MobileDeployInputOverlay)).apply {
-            minimumWidth=0;hint=label;boxBackgroundMode=TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(dp(5).toFloat(),dp(5).toFloat(),dp(5).toFloat(),dp(5).toFloat())
+            minimumWidth=0;hint=label;boxBackgroundMode=TextInputLayout.BOX_BACKGROUND_FILLED
+            boxBackgroundColor=MobilePalette.well;boxStrokeWidth=0;boxStrokeWidthFocused=0
+            setBoxCornerRadii(dp(MobilePalette.wellDp).toFloat(),dp(MobilePalette.wellDp).toFloat(),dp(MobilePalette.wellDp).toFloat(),dp(MobilePalette.wellDp).toFloat())
             defaultHintTextColor=android.content.res.ColorStateList.valueOf(MobilePalette.muted)
             hintTextColor=android.content.res.ColorStateList.valueOf(MobilePalette.accent(requireContext()))
             setBoxStrokeColorStateList(android.content.res.ColorStateList(arrayOf(intArrayOf(android.R.attr.state_focused),intArrayOf(android.R.attr.state_hovered),intArrayOf()),intArrayOf(MobilePalette.accent(requireContext()),MobilePalette.accent(requireContext()),MobilePalette.muted)))
@@ -157,7 +178,7 @@ open class DeployEditorFragment : Fragment() {
         val editor=TextInputEditText(box.context).apply {
             minimumWidth=0;textSize=16f;setTextColor(MobilePalette.text);setSingleLine(true)
             inputType=if(secret) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD else if(number) InputType.TYPE_CLASS_NUMBER else InputType.TYPE_CLASS_TEXT
-            setText(s[key]);minimumHeight=dp(48);setPadding(dp(12),dp(12),dp(12),dp(12))
+            setText(s[key]);minimumHeight=dp(48);setPadding(dp(12),dp(24),dp(12),dp(8))
             fun tintCursor() = MobilePalette.tintCursor(this)
             tintCursor()
             setOnFocusChangeListener { _,focused -> if(focused) post { tintCursor() } }
@@ -180,6 +201,16 @@ open class DeployEditorFragment : Fragment() {
             text=label;textSize=15f;setTextColor(MobilePalette.text);minHeight=dp(48);isChecked=s[key]=="true"
             setOnCheckedChangeListener { _,checked -> s[key]=checked.toString();refreshSaveAction();if(rebuild) build() }
         },LinearLayout.LayoutParams(-1,-2))
+    }
+    /** One setting of a few values, in the look of the sign-in choice above it. */
+    private fun choice(parent: LinearLayout,s: DeployServer,key: String,title: String,options: List<Pair<String,String>>) {
+        heading(parent,title)
+        row(parent) { r ->
+            for((value,label) in options) button(r,label,pair=true) { s[key]=value;refreshSaveAction();build() }.apply {
+                if(MobileStyle.new) glassButton(this,s[key]==value)
+                else { strokeWidth=dp(1);strokeColor=android.content.res.ColorStateList.valueOf(if(s[key]==value) MobilePalette.accent(requireContext()) else MobilePalette.muted) }
+            }
+        }
     }
     private fun secrets(s: DeployServer) {
         if(s.kind=="csqtt" && s["password"].isBlank()) { s["password"]=CsqttDeployPolicy.password();refreshSaveAction() }
@@ -248,7 +279,7 @@ open class DeployEditorFragment : Fragment() {
             }
         }
         refreshSaveAction()
-        if(s.kind!="csqtt") {
+        if(s.kind!="csqtt" && s.kind!="freeturn" && s.kind!="mrtt") {
             button(body,if(s.kind=="qwdtt") "Секреты (бот, пароли)" else "Авторизация",R.drawable.ic_baseline_vpn_key_24) { secrets(s) }
         }
         val access=card()
@@ -263,13 +294,16 @@ open class DeployEditorFragment : Fragment() {
         }
         if(s.kind!="csqtt") { heading(access,"Вход на сервер"); row(access) { r ->
             for((value,label) in listOf("password" to "Пароль","key" to "SSH-ключ")) button(r,label,pair=true) { s["auth"]=value;build() }.apply {
-                strokeWidth=dp(1);strokeColor=android.content.res.ColorStateList.valueOf(if(s["auth"]==value) MobilePalette.accent(requireContext()) else MobilePalette.muted)
+                if(MobileStyle.new) glassButton(this,s["auth"]==value)
+                else { strokeWidth=dp(1);strokeColor=android.content.res.ColorStateList.valueOf(if(s["auth"]==value) MobilePalette.accent(requireContext()) else MobilePalette.muted) }
             }
         } }
         if(s["auth"]=="key") {
             button(access,if(s["key"].isBlank()) "Загрузить ключ" else "Сменить ключ",R.drawable.ic_baseline_vpn_key_24) { host.pickKey() }.apply {
-                strokeWidth=dp(1);strokeColor=android.content.res.ColorStateList.valueOf(MobilePalette.accent(requireContext()))
-                backgroundTintList=android.content.res.ColorStateList.valueOf(MobilePalette.background)
+                if(!MobileStyle.new) {
+                    strokeWidth=dp(1);strokeColor=android.content.res.ColorStateList.valueOf(MobilePalette.accent(requireContext()))
+                    backgroundTintList=android.content.res.ColorStateList.valueOf(MobilePalette.background)
+                }
             }
             if(s["key"].isNotBlank()) button(access,"Удалить ключ",R.drawable.ic_mobile_delete) { s["key"]="";s["keyName"]="";build() }
             if(s["key"].isNotBlank()) heading(access,"Ключ загружен: "+s["keyName"])
@@ -282,10 +316,28 @@ open class DeployEditorFragment : Fragment() {
             setOnCheckedChangeListener { _,checked -> s["auth"]=if(checked) "key" else "password";build() }
         })
         if(s.kind=="qwdtt") { field(access,s,"dns1","DNS 1");field(access,s,"dns2","DNS 2") }
+        if(s.kind=="freeturn") {
+            choice(access,s,"ftBackend","VPN на сервере",listOf("new" to "Новый WireGuard","external" to "Уже установлен"))
+            if(s["ftBackend"]=="external") {
+                field(access,s,"ftConnect","Адрес VPN на сервере (хост:порт)")
+                choice(access,s,"ftMode","Протокол VPN",listOf("udp" to "UDP: WireGuard","tcp" to "TCP: Xray"))
+            }
+            choice(access,s,"ftMethod","Запуск",listOf("docker" to "Docker","systemd" to "systemd"))
+            choice(access,s,"ftObf","Обфускация",listOf("rtpopus3" to "rtpopus3","rtpopus2" to "rtpopus2","none" to "Нет"))
+        }
         switch(access,s,"manualPorts","Ручное управление портами",true)
-        if(s.kind!="csqtt" && s["manualPorts"]=="true") {
+        if(s.kind=="mrtt") {
+            if(s["manualPorts"]=="true") {
+                field(access,s,"sshPort","Порт SSH",number=true)
+                row(access) { r -> field(r,s,"peerPort","UDP-порт",number=true,pair=true);field(r,s,"webPort","Порт API",number=true,pair=true) }
+                heading(access,"Порт API слушает только 127.0.0.1 на сервере: приложение подключается к нему через SSH.")
+            }
+            field(access,s,"password","Пароль владельца")
+            switch(access,s,"docker","Установка в Docker")
+        } else if(s.kind!="csqtt" && s["manualPorts"]=="true") {
             row(access) { r -> field(r,s,"peerPort","Порт туннеля",number=true,pair=true);field(r,s,"wgPort","Порт WG",number=true,pair=true) }
             if(s.kind=="wdttplus") field(access,s,"localPort","Локальный порт клиента",number=true)
+            if(s.kind=="freeturn") field(access,s,"sshPort","Порт SSH",number=true)
             if(s.kind=="qwdtt") {
                 row(access) { r -> field(r,s,"rawPort","Порт RAW",number=true,pair=true);field(r,s,"directPort","Прямой порт",number=true,pair=true) }
                 field(access,s,"adminPort","Порт админ-панели",number=true)
@@ -313,58 +365,35 @@ open class DeployEditorFragment : Fragment() {
         }
         operations+=button(body,"Установить / обновить",R.drawable.ic_mobile_core) { host.start(false) }
         operations+=button(body,"Удалить сервис с VPS",R.drawable.ic_mobile_delete) { host.start(true) }
+        // The install's state: its step and bar while it runs, the result after; the log opens on request.
         val console=card();consoleCard=console.parent as View
-        toggle=disclosure(console,"Консоль") { expanded=!expanded;expand() };consoleHeader=toggle?.parent as? View
         val content=column();console.addView(content);details=content
-        status=TextView(requireContext()).apply { setTextColor(MobilePalette.text);textSize=14f };content.addView(status)
-        progress=ProgressBar(requireContext(),null,android.R.attr.progressBarStyleHorizontal);content.addView(progress,LinearLayout.LayoutParams(-1,dp(16)))
-        output=TextView(requireContext()).apply { setTextColor(android.graphics.Color.rgb(134,235,149));typeface=android.graphics.Typeface.MONOSPACE;textSize=12f;setTextIsSelectable(true);setPadding(dp(12),dp(12),dp(12),dp(12)) }
-        logScroll=object: ScrollView(requireContext()) {
-            override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
-                if(event.actionMasked==android.view.MotionEvent.ACTION_DOWN) {
-                    touchingLogs=true;followLogs=false;parent.requestDisallowInterceptTouchEvent(true)
-                }
-                val handled=super.dispatchTouchEvent(event)
-                if(event.actionMasked==android.view.MotionEvent.ACTION_UP || event.actionMasked==android.view.MotionEvent.ACTION_CANCEL) {
-                    touchingLogs=false;followLogs=!canScrollVertically(1);parent.requestDisallowInterceptTouchEvent(false)
-                }
-                return handled
-            }
-        }.apply {
-            background=android.graphics.drawable.GradientDrawable().apply { setColor(android.graphics.Color.rgb(8,12,9));cornerRadius=dp(12).toFloat() };clipToOutline=true
-            isVerticalScrollBarEnabled=false;isHorizontalScrollBarEnabled=false;overScrollMode=View.OVER_SCROLL_NEVER
-            setOnScrollChangeListener { _: View, _: Int, _: Int, _: Int, _: Int ->
-                if(touchingLogs) followLogs=!canScrollVertically(1)
-                else if(!canScrollVertically(1)) followLogs=true
-            }
-            addView(output)
-        }
-        output?.addOnLayoutChangeListener { _,_,_,_,_,_,_,_,_ ->
-            if(followLogs && !touchingLogs) logScroll?.scrollTo(0,output?.height ?: 0)
-        }
-        content.addView(logScroll,LinearLayout.LayoutParams(-1,dp(220)))
-        stop=button(content,"Остановить") { DeployEngine.cancel() }.apply {
-            backgroundTintList=android.content.res.ColorStateList.valueOf(MobilePalette.background)
-            insetTop=0;insetBottom=0
-            (layoutParams as LinearLayout.LayoutParams).apply { topMargin=dp(12);bottomMargin=dp(6) }
-        }
-        val config=card();configCard=config.parent as View
-        configArrow=disclosure(config,DeployActivity.title(s.kind)+" конфиг") { configExpanded=!configExpanded;expand() }
-        val configBody=column();config.addView(configBody);configDetails=configBody
-        // The same share blocks as every server screen: the link, its QR code and, for qWDTT, the legacy wdtt:// link.
-        configBox=column().also { configBody.addView(it) }
-        expand();render(DeployEngine.state.value)
+        status=TextView(requireContext()).apply { setTextColor(MobilePalette.text);textSize=15f;setTypeface(typeface,android.graphics.Typeface.BOLD) };content.addView(status)
+        progress=MobileProgress.bar(requireContext());content.addView(progress,LinearLayout.LayoutParams(-1,dp(8)).apply { topMargin=dp(10);bottomMargin=dp(4) })
+        val actions=LinearLayout(requireContext()).apply { gravity=android.view.Gravity.CENTER_VERTICAL }
+        content.addView(actions)
+        actions.addView(ServerUi(requireContext()).textButton("Журнал установки") { showLog() })
+        actions.addView(View(requireContext()),LinearLayout.LayoutParams(0,1,1f))
+        stop=MaterialButton(requireContext()).apply { visibility=View.GONE }
+        val cancel=ServerUi(requireContext()).textButton("Остановить") { host.cancelOperation() }
+        actions.addView(cancel);stopLabel=cancel
+        expand();render(host.currentState())
     }
-    private fun expand() {
-        details?.visibility=if(expanded) View.VISIBLE else View.GONE
-        toggle?.setImageResource(if(expanded) R.drawable.ic_baseline_expand_less_24 else R.drawable.ic_baseline_expand_more_24)
-        consoleHeader?.contentDescription=if(expanded) "Консоль, раскрыта" else "Консоль, свёрнута"
-        configDetails?.visibility=if(configExpanded) View.VISIBLE else View.GONE
-        configArrow?.setImageResource(if(configExpanded) R.drawable.ic_baseline_expand_less_24 else R.drawable.ic_baseline_expand_more_24)
-        (configArrow?.parent as? View)?.contentDescription=if(configExpanded) "Конфиг, раскрыт" else "Конфиг, свёрнут"
+    private fun expand() {}
+    private var stopLabel: TextView?=null
+    private fun showLog() {
+        val text=shownLog.ifBlank { "Журнал пуст" }
+        val ui=ServerUi(requireContext())
+        ui.sheet("Журнал установки") { body,_ ->
+            body.addView(ui.text(text,12f,mono=true).apply { setTextIsSelectable(true);setPadding(dp(12),dp(12),dp(12),dp(12));background=ui.well() })
+            body.addView(ui.button("Поделиться") {
+                startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
+                    .putExtra(android.content.Intent.EXTRA_TEXT,text),"Журнал установки"))
+            },LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(10) })
+        }
     }
+    private var shownLog=""
     fun revealConsole() {
-        expanded=true;followLogs=true;expand()
         (requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager).hideSoftInputFromWindow(scroll.windowToken,0)
         scroll.post { consoleCard?.let { scroll.smoothScrollTo(0,it.top) } }
     }
@@ -375,35 +404,16 @@ open class DeployEditorFragment : Fragment() {
             if(state.configCleared) s.recordUninstall()
             else if(state.config.isNotBlank()) s["config"]=state.config
         }
-        displayedConfig=DeployConfig.display(s?.get("config").orEmpty())
-        val legacy=if(s!=null && s.kind=="qwdtt" && displayedConfig.isNotBlank()) runCatching {
-            app.qthrone.mobile.deploy.QwdttAdmin.links(s,s["name"].ifBlank { s["password"] },s["password"],emptyList()).second
-        }.getOrNull() else null
-        val shown=displayedConfig+" "+legacy.orEmpty()
-        if(configBox!=null && shown!=shownConfig) {
-            shownConfig=shown
-            val ui=ServerUi(requireContext())
-            configBox?.removeAllViews()
-            if(displayedConfig.isBlank()) configBox?.addView(ui.text("Конфиг появится после успешной установки",14f,MobilePalette.muted))
-            else {
-                configBox?.addView(ui.linkRow(null,displayedConfig,lines=4))
-                configBox?.addView(ui.qrRow(displayedConfig))
-                if(legacy!=null) configBox?.addView(ui.linkRow("Ссылка WDTT (легаси)",legacy))
-            }
-        }
-        status?.text=if(relevant) state.step+(if(state.running && !state.installerProgress && state.percent in 45..99) "" else " · "+state.percent+"%") else "Готово к подключению"
-        val logs="$ "+(s?.kind ?: "deploy")+" deploy\n"+(if(relevant) state.logs.ifBlank { "Ожидание подключения к VPS…" } else "Ожидание подключения к VPS…")
-        if(output?.text?.toString()!=logs) {
-            output?.text=logs
-            if(followLogs) logScroll?.post { if(followLogs && !touchingLogs) logScroll?.scrollTo(0,output?.height ?: 0) }
-        }
+        // Seen while this server's install runs and after it, until the screen is left.
+        consoleCard?.visibility=if(relevant && (state.running || state.logs.isNotBlank())) View.VISIBLE else View.GONE
+        status?.text=if(relevant) state.step+(if(state.running && !state.installerProgress && state.percent in 45..99) "" else " · "+state.percent+"%") else ""
+        shownLog=if(relevant) state.logs else ""
         progress?.progress=if(relevant) state.percent else 0
         progress?.isIndeterminate=relevant && state.running && !state.installerProgress && state.percent in 45..99
-        stop?.apply {
+        stopLabel?.apply {
+            visibility=if(relevant && state.running) View.VISIBLE else View.GONE
             isEnabled=relevant && state.running && !state.stopping
             text=if(relevant && state.stopping) "Останавливаю…" else "Остановить"
-            alpha=if(isEnabled) 1f else .45f
-            setTextColor(if(isEnabled) MobilePalette.accent(requireContext()) else MobilePalette.muted)
         }
         operations.forEach { it.isEnabled=!state.running }
         // Keep the encrypted record consistent with the operation's SSH/settings snapshot.

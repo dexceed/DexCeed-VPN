@@ -1,18 +1,18 @@
-package app.qthrone.mobile.database
+package app.rawline.mobile.database
 
 import android.os.Binder
 import androidx.preference.PreferenceDataStore
-import app.qthrone.mobile.Key
-import app.qthrone.mobile.bg.BaseService
-import app.qthrone.mobile.bg.VpnService
-import app.qthrone.mobile.database.preference.OnPreferenceDataStoreChangeListener
-import app.qthrone.mobile.database.preference.RoomPreferenceDataStore
-import app.qthrone.mobile.database.preference.SettingsStore
-import app.qthrone.mobile.ktx.boolean
-import app.qthrone.mobile.ktx.int
-import app.qthrone.mobile.ktx.long
-import app.qthrone.mobile.ktx.string
-import app.qthrone.mobile.ktx.stringToInt
+import app.rawline.mobile.Key
+import app.rawline.mobile.bg.BaseService
+import app.rawline.mobile.bg.VpnService
+import app.rawline.mobile.database.preference.OnPreferenceDataStoreChangeListener
+import app.rawline.mobile.database.preference.RoomPreferenceDataStore
+import app.rawline.mobile.database.preference.SettingsStore
+import app.rawline.mobile.ktx.boolean
+import app.rawline.mobile.ktx.int
+import app.rawline.mobile.ktx.long
+import app.rawline.mobile.ktx.string
+import app.rawline.mobile.ktx.stringToInt
 import moe.matsuri.nb4a.TempDatabase
 import java.util.UUID
 
@@ -46,6 +46,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var appTLSVersion by configurationStore.string(Key.APP_TLS_VERSION)
     var updateCheckAuto by configurationStore.boolean(Key.UPDATE_CHECK_AUTO) { true }
     var mobileListMode by configurationStore.string("qmobileListMode") { "groups" }
+    var uiStyle by configurationStore.string("qmobileUiStyle") { "new" }
     var serverListRaised by configurationStore.boolean(Key.SERVER_LIST_RAISED)
     var providerGeoRestored by configurationStore.boolean(Key.PROVIDER_GEO_RESTORED)
     var updateSkippedVersionCode by configurationStore.long(Key.UPDATE_SKIPPED_VERSION_CODE)
@@ -71,7 +72,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var networkChangeResetConnections by configurationStore.boolean(Key.NETWORK_CHANGE_RESET_CONNECTIONS) { true }
     var wakeResetConnections by configurationStore.boolean(Key.WAKE_RESET_CONNECTIONS) { true }
 
-    var appTheme by configurationStore.int(Key.APP_THEME) { app.qthrone.mobile.utils.Theme.GREY }
+    var appTheme by configurationStore.int(Key.APP_THEME) { app.rawline.mobile.utils.Theme.GREY }
     var useSystemTheme by configurationStore.boolean(Key.USE_SYSTEM_THEME)
     var nightTheme by configurationStore.stringToInt(Key.NIGHT_THEME) { 1 }
     var amoledTheme by configurationStore.boolean(Key.AMOLED_THEME)
@@ -116,7 +117,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
         set(value) = configurationStore.putString(Key.WEBDAV_PASSWORD, value)
 
     var webdavPath: String?
-        get() = configurationStore.getString(Key.WEBDAV_PATH) ?: "Throne"
+        get() = configurationStore.getString(Key.WEBDAV_PATH) ?: "Rawline"
         set(value) = configurationStore.putString(Key.WEBDAV_PATH, value)
 
     // ------------------------------------------------------------------------------------------------ desktop keys
@@ -156,7 +157,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     private var appListenerPass by configurationStore.string(Key.APP_LISTENER_PASS)
     /** TUN mode's loopback proxy has its own account: the user's inbound password may be shorter than VpnListenerPolicy's 32 characters. */
     private val appListener: Boolean get() = serviceMode == Key.MODE_VPN && !lanSharingEnabled
-    val listenerUser: String get() = if (appListener) "qthrone-app" else inboundUser
+    val listenerUser: String get() = if (appListener) "rawline-app" else inboundUser
     val listenerPass: String get() = if (!appListener) inboundPass else appListenerPass.takeIf { it.length >= 32 }
         ?: java.util.UUID.randomUUID().toString().replace("-", "").also { appListenerPass = it }
 
@@ -165,7 +166,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
         get() = !SettingsRegistry.isLoopbackAddress(inboundAddress)
 
     fun initGlobal() {
-        if(inboundUser.isEmpty()) inboundUser="qthrone_"+java.util.UUID.randomUUID().toString().take(8)
+        if(inboundUser.isEmpty()) inboundUser="rawline_"+java.util.UUID.randomUUID().toString().take(8)
         if(inboundPass.isEmpty()) inboundPass=java.util.UUID.randomUUID().toString().replace("-", "")
         if(!configurationStore.contains(SettingsRegistry.INBOUND_AUTH.key)) inboundAuth=true
         if (!configurationStore.contains(SettingsRegistry.INBOUND_SOCKS_PORT.key)) {
@@ -183,6 +184,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var lanSharingEnabled by SettingsRegistry.LAN_SHARING_ENABLED
     var vpnPrivateRanges by SettingsRegistry.VPN_PRIVATE_RANGES
     var enableTunRouting by SettingsRegistry.ENABLE_TUN_ROUTING
+    var blockUnownedTun by SettingsRegistry.BLOCK_UNOWNED_TUN
     var blockQuic by SettingsRegistry.BLOCK_QUIC
 
     // routing

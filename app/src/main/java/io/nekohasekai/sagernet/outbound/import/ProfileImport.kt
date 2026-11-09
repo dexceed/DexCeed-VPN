@@ -1,21 +1,21 @@
-package app.qthrone.mobile.outbound.import
+package app.rawline.mobile.outbound.import
 
-import app.qthrone.mobile.outbound.Outbound
-import app.qthrone.mobile.outbound.OutboundFactory
-import app.qthrone.mobile.outbound.json.JsonArray
-import app.qthrone.mobile.outbound.json.JsonInput
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.link.Base64Strict
-import app.qthrone.mobile.group.ProviderLinks
-import app.qthrone.mobile.group.SubscriptionCrypto
-import app.qthrone.mobile.outbound.link.LinkCodec
-import app.qthrone.mobile.outbound.types.Custom
-import app.qthrone.mobile.outbound.types.DnsTunnel
-import app.qthrone.mobile.outbound.types.OpenConnect
-import app.qthrone.mobile.outbound.types.OpenVpn
-import app.qthrone.mobile.outbound.types.Shadowsocks
-import app.qthrone.mobile.outbound.types.Socks
-import app.qthrone.mobile.outbound.types.WireGuard
+import app.rawline.mobile.outbound.Outbound
+import app.rawline.mobile.outbound.OutboundFactory
+import app.rawline.mobile.outbound.json.JsonArray
+import app.rawline.mobile.outbound.json.JsonInput
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.link.Base64Strict
+import app.rawline.mobile.group.ProviderLinks
+import app.rawline.mobile.group.SubscriptionCrypto
+import app.rawline.mobile.outbound.link.LinkCodec
+import app.rawline.mobile.outbound.types.Custom
+import app.rawline.mobile.outbound.types.DnsTunnel
+import app.rawline.mobile.outbound.types.OpenConnect
+import app.rawline.mobile.outbound.types.OpenVpn
+import app.rawline.mobile.outbound.types.Shadowsocks
+import app.rawline.mobile.outbound.types.Socks
+import app.rawline.mobile.outbound.types.WireGuard
 import java.io.ByteArrayOutputStream
 import java.util.zip.Inflater
 
@@ -62,6 +62,9 @@ object ProfileImport {
         val produced = ArrayList<Outbound>()
         val messages = ArrayList<String>()
 
+        /** The address lines of the text being read, for the DNS tunnels in it. */
+        private var resolvers = emptyList<String>()
+
         /** Issue #63: a node its core cannot run is logged and dropped ([CoreSupport]). */
         private fun produce(outbound: Outbound?) {
             if (outbound == null) return
@@ -70,6 +73,7 @@ object ProfileImport {
                 skip(outbound, problem)
                 return
             }
+            (outbound as? DnsTunnel)?.adoptResolvers(resolvers)
             produced.add(outbound)
         }
 
@@ -157,9 +161,14 @@ object ProfileImport {
             }
 
             if (needParse && text.contains('\n')) {
+                val outer = resolvers
+                val found = ArrayList<String>()
+                Scan.forEachLine(text) { line -> found.addAll(DnsTunnel.resolverList(line)); true }
+                resolvers = found.distinct().ifEmpty { outer }
                 Scan.forEachItem(text) { item ->
-                    document(item, allowBase64 = true, needParse = false, depth = depth + 1, overrideName = overrideName)
+                    if (DnsTunnel.resolverList(item).isEmpty()) document(item, allowBase64 = true, needParse = false, depth = depth + 1, overrideName = overrideName)
                 }
+                resolvers = outer
                 return
             }
 
@@ -190,7 +199,7 @@ object ProfileImport {
                 if (items != null) { json(items, items.toCompact(),jsonDepth+1); return }
                 // The S3 Bypass app's configuration: Xray with the fedarisha outbound our Xray core does not have.
                 if (doc.array("outbounds").any { it is JsonObject && it.string("protocol")=="fedarisha" }) {
-                    val profile=app.qthrone.mobile.outbound.types.S3Bypass.fromXrayConfig(doc)
+                    val profile=app.rawline.mobile.outbound.types.S3Bypass.fromXrayConfig(doc)
                     if(profile!=null) produce(profile) else log("Invalid S3 Bypass configuration")
                     return
                 }
@@ -219,7 +228,7 @@ object ProfileImport {
                     if(outbound.parseFromJson(copy)) produce(outbound) else log("Invalid ShadowsocksR profile")
                     return
                 }
-                if (type in listOf("qwdtt","wdtt","csqtt","wdttplus","openflux","openfluxkey","olcrtc","dnstt","vaydns","slipstream","masterdns","cottendns","soar","s3bypass","sstp",
+                if (type in listOf("qwdtt","wdtt","csqtt","mrtt","wdttplus","freeturn","openflux","openfluxkey","olcrtc","dnstt","vaydns","slipstream","masterdns","cottendns","soar","s3bypass","sstp",
                         "chain","autoselector","custom","xrayvless","ssr","shadowsocksr")) {
                     val outbound=OutboundFactory.newByType(type)
                     if(outbound.parseFromJson(doc)) produce(outbound) else log("Invalid $type profile")
@@ -238,7 +247,7 @@ object ProfileImport {
                     if(!outbound.invalid && outbound.parseFromJson(doc)) {
                         val exported=outbound.exportToJson()
                         if(doc.all { (key,value) -> exported.contains(key) &&
-                                app.qthrone.mobile.outbound.json.JsonWriter.write(value)==app.qthrone.mobile.outbound.json.JsonWriter.write(exported[key]) }) {
+                                app.rawline.mobile.outbound.json.JsonWriter.write(value)==app.rawline.mobile.outbound.json.JsonWriter.write(exported[key]) }) {
                             produce(outbound);return
                         }
                     }
@@ -462,7 +471,7 @@ object ProfileImport {
 
         /**
          * Parser::link (SubscriptionParser.cpp:591-621): [overrideName] only reaches a link of a wireguard scheme
-         * (json:// and throne://add/ match no scheme).
+         * (json:// and rawline://add/ match no scheme).
          */
         private fun link(item: String, depth: Int, overrideName: String) {
             var line = item
@@ -471,8 +480,8 @@ object ProfileImport {
                 val unwrapped = line.substring(1, line.length - 1).trim()
                 if (OutboundFactory.typeForScheme(unwrapped) in listOf("qwdtt", "wdttplus")) line = unwrapped
             }
-            if (line.startsWith("json://",ignoreCase=true) || line.startsWith("throne://add/",ignoreCase=true)) {
-                val payload=OutboundFactory.decodeJsonLink(line,line.startsWith("throne://add/",ignoreCase=true))
+            if (line.startsWith("json://",ignoreCase=true) || app.rawline.mobile.route.UrlText.isAddLink(line)) {
+                val payload=OutboundFactory.decodeJsonLink(line,app.rawline.mobile.route.UrlText.isAddLink(line))
                 if(payload==null) log("Invalid JSON profile link")
                 else document(payload,allowBase64=false,needParse=true,depth=depth+1,overrideName=overrideName)
                 return
@@ -483,6 +492,15 @@ object ProfileImport {
             }
             if (line.startsWith("phobos://", ignoreCase = true)) {
                 phobosLink(line)
+                return
+            }
+            if (line.startsWith(app.rawline.mobile.outbound.types.Mrtt.SUBSCRIPTION_SCHEME, ignoreCase = true)) {
+                val links = app.rawline.mobile.outbound.types.Mrtt.decodeSubscription(line)
+                if (links == null) log("Invalid MRTT subscription")
+                else for ((name, link) in links) {
+                    val outbound = OutboundFactory.newByType("mrtt")
+                    if (outbound.parseFromLink(link)) { outbound.name = name; produce(outbound) }
+                }
                 return
             }
             val outbound = OutboundFactory.parseLink(line, preference)
@@ -573,7 +591,7 @@ object ProfileImport {
                         val isWireGuard = hasWireGuardSections(conf)
                         // The MTU sits beside the config (AmneziaVPN default 1376: AWG padding does not fit WireGuard's 1420).
                         if (isWireGuard && !Regex("""(?im)^\s*MTU\s*=""").containsMatchIn(conf)) {
-                            val mtu = (lastObj?.get("mtu")?.let { if (it is String) it.trim() else app.qthrone.mobile.outbound.json.JsonValues.toInt(it).toString() })
+                            val mtu = (lastObj?.get("mtu")?.let { if (it is String) it.trim() else app.rawline.mobile.outbound.json.JsonValues.toInt(it).toString() })
                                 ?.takeIf { (it.toIntOrNull() ?: 0) in 576..65535 } ?: "1376"
                             conf = conf.replaceFirst(Regex("""(?im)^\s*\[Interface\]\s*$"""), "[Interface]\nMTU = $mtu")
                         }

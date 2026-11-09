@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The shapes of the current style: row or button, card or sheet, input field, switch. -->
+    <attr name="qtRowRadius" format="dimension" />
+    <attr name="qtCardRadius" format="dimension" />
+    <attr name="qtWellRadius" format="dimension" />
+    <attr name="qtSwitchRadius" format="dimension" />
+    <attr name="qtSwitchThumb" format="reference" />
+    <attr name="qtWellColor" format="color" />
+    <attr name="qtSheetColor" format="color" />
+    <!-- Bars and spinners: the theme's primary colour is clear in the new style. -->
+    <attr name="qtProgressColor" format="color" />
+    <style name="MobileStyleClassic">
+        <item name="qtRowRadius">5dp</item>
+        <item name="qtCardRadius">12dp</item>
+        <item name="qtWellRadius">12dp</item>
+        <item name="qtSwitchRadius">6dp</item>
+        <item name="qtSwitchThumb">@drawable/mobile_switch_thumb</item>
+        <item name="qtWellColor">#24000000</item>
+        <item name="qtSheetColor">?android:attr/colorBackground</item>
+        <item name="qtProgressColor">?attr/colorPrimary</item>
+    </style>
+    <style name="MobileStyleNew">
+        <item name="qtRowRadius">20dp</item>
+        <item name="qtCardRadius">28dp</item>
+        <item name="qtWellRadius">18dp</item>
+        <item name="qtSwitchRadius">14dp</item>
+        <item name="qtSwitchThumb">@drawable/mobile_switch_thumb_drop</item>
+        <item name="switchStyle">@style/MobileSwitchNew</item>
+        <item name="android:switchStyle">@style/MobilePlatformSwitchNew</item>
+        <item name="android:fontFamily">@font/geologica</item>
+        <item name="fontFamily">@font/geologica</item>
+        <item name="toolbarStyle">@style/MobileToolbarNew</item>
+        <item name="bottomSheetDialogTheme">@style/MobileSheetThemeNew</item>
+        <item name="materialButtonStyle">@style/MobileButtonNew</item>
+        <item name="qtProgressColor">?attr/colorAccent</item>
+        <item name="linearProgressIndicatorStyle">@style/MobileLinearProgressNew</item>
+        <item name="circularProgressIndicatorStyle">@style/MobileCircularProgressNew</item>
+    </style>
+    <style name="MobileLinearProgressNew" parent="Widget.MaterialComponents.LinearProgressIndicator">
+        <item name="indicatorColor">?attr/colorAccent</item>
+        <item name="trackColor">?attr/qtWellColor</item>
+        <item name="trackCornerRadius">3dp</item>
+        <item name="trackThickness">6dp</item>
+    </style>
+    <style name="MobileCircularProgressNew" parent="Widget.MaterialComponents.CircularProgressIndicator">
+        <item name="indicatorColor">?attr/colorAccent</item>
+    </style>
+    <!-- Dialog windows get no surface style: their fields and sheets still need these colours. -->
+    <style name="MobileWellNewOled">
+        <item name="qtWellColor">#14FFFFFF</item>
+        <item name="qtSheetColor">#F80A0A0B</item>
+    </style>
+    <style name="MobileWellNewWhite">
+        <item name="qtWellColor">#10000000</item>
+        <item name="qtSheetColor">#F8FAFAFC</item>
+    </style>
+    <style name="MobileSwitchNew" parent="MobileSwitch">
+        <item name="track">@drawable/mobile_switch_track_new</item>
+        <item name="thumbTint">@color/mobile_switch_thumb_alpha</item>
+        <item name="thumbTintMode">multiply</item>
+    </style>
+    <style name="MobilePlatformSwitchNew" parent="MobilePlatformSwitch">
+        <item name="android:track">@drawable/mobile_switch_track_new</item>
+        <item name="android:thumbTint">@color/mobile_switch_thumb_alpha</item>
+        <item name="android:thumbTintMode">multiply</item>
+    </style>
+    <!-- A shadow shows through translucent glass as a bar across the button. -->
+    <style name="MobileButtonNew" parent="Widget.SagerNet.Button">
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+    <!-- The sheet behavior paints its own background from this tint, over anything set in code. -->
+    <style name="MobileSheetThemeNew" parent="ThemeOverlay.SagerNet.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/MobileSheetNew</item>
+    </style>
+    <style name="MobileSheetNew" parent="Widget.SagerNet.BottomSheet">
+        <item name="backgroundTint">?attr/qtSheetColor</item>
+    </style>
+    <style name="MobileToolbarNew" parent="Widget.MaterialComponents.Toolbar">
+        <item name="titleTextAppearance">@style/MobileToolbarNewTitle</item>
+        <item name="subtitleTextAppearance">@style/MobileToolbarNewSubtitle</item>
+    </style>
+    <style name="MobileToolbarNewTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title"><item name="android:textSize">19sp</item><item name="android:textStyle">bold</item></style>
+    <style name="MobileToolbarNewSubtitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle"><item name="android:textSize">12sp</item></style>
+    <!-- The new style has two surfaces only: true black and true white. -->
+    <style name="MobileSurfaceNewOled" parent="MobileSurfaceOled">
+        <item name="colorSurface">#151518</item>
+        <item name="colorOnSurface">#f5f5f7</item>
+        <item name="colorOnPrimary">#f5f5f7</item>
+        <item name="android:textColorPrimary">#f5f5f7</item>
+        <item name="colorAccent">#f5f5f7</item>
+        <item name="qtWellColor">#14FFFFFF</item>
+        <item name="qtSheetColor">#F80A0A0B</item>
+        <item name="colorPrimary">#00000000</item>
+    </style>
+    <style name="MobileSurfaceNewWhite" parent="MobileSurfaceWhite">
+        <item name="android:windowBackground">#ffffff</item>
+        <item name="android:colorBackground">#ffffff</item>
+        <item name="colorSurface">#f3f3f6</item>
+        <item name="colorPrimary">#00ffffff</item>
+        <item name="colorOnSurface">#0a0a0b</item>
+        <item name="colorOnPrimary">#0a0a0b</item>
+        <item name="android:textColorPrimary">#0a0a0b</item>
+        <item name="colorAccent">#0a0a0b</item>
+        <item name="qtWellColor">#10000000</item>
+        <item name="qtSheetColor">#F8FAFAFC</item>
+    </style>
+    <style name="MobileSheetFast">
+        <item name="android:windowEnterAnimation">@anim/sheet_fast_enter</item>
+        <item name="android:windowExitAnimation">@anim/sheet_fast_exit</item>
+    </style>
+    <style name="MobileSheetSoft">
+        <item name="android:windowEnterAnimation">@anim/sheet_soft_enter</item>
+        <item name="android:windowExitAnimation">@anim/sheet_soft_exit</item>
+    </style>
+    <style name="MobileDialogSoft">
+        <item name="android:windowEnterAnimation">@anim/dialog_soft_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_soft_exit</item>
+    </style>
+</resources>

@@ -1,17 +1,17 @@
-package app.qthrone.mobile.ui.route
+package app.rawline.mobile.ui.route
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.RouteManager
-import app.qthrone.mobile.ktx.snackbar
-import app.qthrone.mobile.route.RouteProfile
-import app.qthrone.mobile.ui.MainActivity
-import app.qthrone.mobile.ui.settings.WarpSettingsFragment
-import app.qthrone.mobile.ui.warp.WarpClient
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.RouteManager
+import app.rawline.mobile.ktx.snackbar
+import app.rawline.mobile.route.RouteProfile
+import app.rawline.mobile.ui.MainActivity
+import app.rawline.mobile.ui.settings.WarpSettingsFragment
+import app.rawline.mobile.ui.warp.WarpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,7 +27,7 @@ object RouteQuickSwitch {
             }
             val context = fragment.context ?: return@launch
             val names = Array<CharSequence>(profiles.size) { profiles[it].name.ifBlank { "#" + profiles[it].id } }
-            MaterialAlertDialogBuilder(context)
+            MobileAlertDialogBuilder(context)
                 .setTitle(R.string.route_profile_quick_switch)
                 .setSingleChoiceItems(names, profiles.indexOfFirst { it.id == currentId }) { dialog, which ->
                     dialog.dismiss()

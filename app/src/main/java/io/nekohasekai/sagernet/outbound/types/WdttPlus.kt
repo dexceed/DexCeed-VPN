@@ -1,10 +1,10 @@
-package app.qthrone.mobile.outbound.types
+package app.rawline.mobile.outbound.types
 
 import android.os.Build
-import app.qthrone.mobile.bg.carrier.CarrierBridgeCredentials
-import app.qthrone.mobile.bg.carrier.CarrierKind
-import app.qthrone.mobile.outbound.json.*
-import app.qthrone.mobile.outbound.link.*
+import app.rawline.mobile.bg.carrier.CarrierBridgeCredentials
+import app.rawline.mobile.bg.carrier.CarrierKind
+import app.rawline.mobile.outbound.json.*
+import app.rawline.mobile.outbound.link.*
 import java.util.Locale
 import java.util.TimeZone
 
@@ -195,7 +195,7 @@ class WdttPlus : Qwdtt() {
             return org.json.JSONObject().put("name", name).put("manufacturer", Build.MANUFACTURER.orEmpty())
                 .put("brand", Build.BRAND.orEmpty()).put("model", Build.MODEL.orEmpty())
                 .put("android_version", Build.VERSION.RELEASE.orEmpty()).put("sdk", Build.VERSION.SDK_INT)
-                .put("abi", Build.SUPPORTED_ABIS?.firstOrNull().orEmpty()).put("app_version", "qThroneMobile")
+                .put("abi", Build.SUPPORTED_ABIS?.firstOrNull().orEmpty()).put("app_version", "RawlineMobile")
                 .put("locale", locale.toLanguageTag()).put("country", locale.country.orEmpty())
                 .put("time_zone", TimeZone.getDefault().id).toString()
         }

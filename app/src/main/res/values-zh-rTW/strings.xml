@@ -550,12 +550,12 @@
     <string name="backup_error_foreign_key">恢復的 %s 表引用了缺失的行。</string>
     <string name="backup_error_missing_column">備份的 %1$s 表沒有 %2$s 列。</string>
     <string name="backup_error_missing_table">備份中沒有 %s 表。</string>
-    <string name="backup_error_not_backup">不是有效的 Throne 備份檔案。</string>
+    <string name="backup_error_not_backup">不是有效的 DexCeed VPN 備份檔案。</string>
     <string name="backup_error_nothing">此備份檔案不包含任何可恢復的資料。</string>
     <string name="backup_error_version">不支援的備份格式版本：%d。\n此備份可能由更新版本的應用建立。</string>
     <string name="backup_failed">建立備份失敗：%s</string>
-    <string name="backup_local_summary">備份使用 Throne 桌面版格式（.thrbackup）：任一端應用都可恢復。WebDAV 憑據儲存在本裝置。</string>
-    <string name="backup_open_label">恢復 Throne 備份</string>
+    <string name="backup_local_summary">備份使用 DexCeed VPN 桌面版格式（.rwlbackup）：任一端應用都可恢復。WebDAV 憑據儲存在本裝置。</string>
+    <string name="backup_open_label">恢復 DexCeed VPN 備份</string>
     <string name="backup_part_otp">OTP 配置（Android 上不恢復）</string>
     <string name="backup_part_profiles">配置（分組與代理）</string>
     <string name="backup_part_routes">路由配置</string>
@@ -582,7 +582,7 @@
     <string name="backup_warn_moved_profiles">%d 個所屬分組缺失的配置已移動到其他分組。</string>
     <string name="backup_warn_orphan_rules">已跳過 %d 條所屬路由配置缺失的規則。</string>
     <string name="backup_warn_orphan_tabs">已丟棄 %d 個沒有分組的標籤位。</string>
-    <string name="backup_warn_raw_routes">來自 Throne 桌面版的 %d 個原始路由配置保持只讀；Android 無法使用。</string>
+    <string name="backup_warn_raw_routes">來自 DexCeed VPN 桌面版的 %d 個原始路由配置保持只讀；Android 無法使用。</string>
     <string name="backup_warn_rows_skipped">已跳過 %2$s 中 %1$d 行無效資料。</string>
     <string name="backup_warn_unlisted_profiles">%d 個未列入其分組列表的配置已追加到末尾。</string>
     <string name="backup_warn_untabbed_groups">%d 個沒有標籤位的分組已追加到末尾。</string>
@@ -925,7 +925,7 @@
     <string name="profiles_appearance">外觀</string>
     <string name="profiles_copy_links">複製連結</string>
     <string name="profiles_copy_share_links">分享連結</string>
-    <string name="profiles_copy_throne_links">Throne 連結</string>
+    <string name="profiles_copy_rawline_links">DexCeed VPN 連結</string>
     <string name="profiles_delete_failed">無法刪除這些配置。</string>
     <string name="profiles_empty">此分組中沒有配置</string>
     <string name="profiles_empty_hint">使用工具欄的「新增配置」按鈕從剪貼簿、檔案或二維碼匯入，或新建配置。已複製的訂閱 URL 也可作為訂閱新增。</string>
@@ -1014,7 +1014,7 @@
     <string name="route_import_invalid_title">無效輸入</string>
     <string name="route_import_note">注意：</string>
     <string name="route_import_parse_failed">無法解析該連結：\n%s</string>
-    <string name="route_import_paste_hint">貼上 Throne 路由連結、remoteRoute 連結、base64 資料或 JSON 規則陣列</string>
+    <string name="route_import_paste_hint">貼上 DexCeed VPN 路由連結、remoteRoute 連結、base64 資料或 JSON 規則陣列</string>
     <string name="route_import_paste_title">匯入路由配置</string>
     <string name="route_import_prompt">新增此路由配置？\n\n名稱：%s</string>
     <string name="route_import_title">匯入路由配置</string>
@@ -1058,12 +1058,12 @@
     <string name="route_profile_rules">規則（%d）</string>
     <string name="route_profile_title">路由配置</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://…（throne://route 連結、base64 或 JSON）</string>
+    <string name="route_profile_url_hint">https://…（rawline://route 連結、base64 或 JSON）</string>
     <string name="route_profiles">路由配置</string>
     <string name="route_profiles_sum">建立、編輯、匯入與下載路由配置</string>
-    <string name="route_raw_not_usable">來自 Throne 桌面版的原始路由配置無法在 Android 上使用。</string>
-    <string name="route_raw_notice">此原始路由配置在 Throne 桌面版上建立。保持原樣以便備份後交回桌面版；Android 無法編輯或使用它。</string>
-    <string name="route_raw_summary">原始（Throne 桌面版）· 只讀</string>
+    <string name="route_raw_not_usable">來自 DexCeed VPN 桌面版的原始路由配置無法在 Android 上使用。</string>
+    <string name="route_raw_notice">此原始路由配置在 DexCeed VPN 桌面版上建立。保持原樣以便備份後交回桌面版；Android 無法編輯或使用它。</string>
+    <string name="route_raw_summary">原始（DexCeed VPN 桌面版）· 只讀</string>
     <string name="route_raw_view">檢視</string>
     <string name="route_refresh_repo">重新整理倉庫列表</string>
     <string name="route_remote_add_prompt">新增這些遠端路由配置？</string>
@@ -1175,7 +1175,7 @@
     <string name="settings_appearance">外觀</string>
     <string name="settings_appearance_sum">主題、語言、配置列表、通知</string>
     <string name="settings_backup">備份與恢復</string>
-    <string name="settings_backup_sum">與 Throne 桌面版共享的 .thrbackup 檔案、本地與 WebDAV</string>
+    <string name="settings_backup_sum">與 DexCeed VPN 桌面版共享的 .rwlbackup 檔案、本地與 WebDAV</string>
     <string name="settings_core">核心</string>
     <string name="settings_core_sum">日誌、統計、Clash API、安全、NTP</string>
     <string name="settings_dns">DNS</string>
@@ -1327,7 +1327,7 @@
     <string name="test_panel_title">%1$s · %2$s</string>
     <string name="test_panel_unnamed">配置 %d</string>
     <string name="test_panel_working">可用</string>
-    <string name="throne_link">Throne 連結</string>
+    <string name="rawline_link">DexCeed VPN 連結</string>
     <string name="tls_fragment">TLS Client Hello 分片</string>
     <string name="tls_fragment_fallback_delay">分片回退延遲</string>
     <string name="tls_record_fragment">TLS 記錄分片</string>
@@ -1454,7 +1454,7 @@
     <string name="webdav_choose_backup">選擇備份</string>
     <string name="webdav_downloading">正在從 WebDAV 下載…</string>
     <string name="webdav_listing">正在讀取 WebDAV 資料夾…</string>
-    <string name="webdav_no_backups">在 %s 中未找到 .thrbackup 檔案。</string>
+    <string name="webdav_no_backups">在 %s 中未找到 .rwlbackup 檔案。</string>
     <string name="webdav_uploading">正在上傳到 WebDAV…</string>
     <string name="widget_connected">已連線</string>
     <string name="widget_next">下一個伺服器</string>

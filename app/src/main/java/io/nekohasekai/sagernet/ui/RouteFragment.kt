@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -20,43 +20,45 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.RouteManager
-import app.qthrone.mobile.database.RouteRepo
-import app.qthrone.mobile.databinding.LayoutProgressListBinding
-import app.qthrone.mobile.databinding.LayoutRouteProfileItemBinding
-import app.qthrone.mobile.group.RemoteRouteUpdater
-import app.qthrone.mobile.ktx.FixedLinearLayoutManager
-import app.qthrone.mobile.ktx.confirmAction
-import app.qthrone.mobile.ktx.dp2px
-import app.qthrone.mobile.ktx.needReload
-import app.qthrone.mobile.ktx.onMainDispatcher
-import app.qthrone.mobile.ktx.readableMessage
-import app.qthrone.mobile.ktx.runOnLifecycleDispatcher
-import app.qthrone.mobile.ktx.showAllowingStateLoss
-import app.qthrone.mobile.ktx.snackbar
-import app.qthrone.mobile.route.RouteProfile
-import app.qthrone.mobile.route.RouteShare
-import app.qthrone.mobile.route.RuleType
-import app.qthrone.mobile.ui.route.RouteImports
-import app.qthrone.mobile.ui.route.RouteJson
-import app.qthrone.mobile.ui.route.RouteProfileActivity
-import app.qthrone.mobile.ui.route.RouteQuickSwitch
-import app.qthrone.mobile.ui.route.RouteTexts
-import app.qthrone.mobile.ui.settings.RoutingSettingsFragment
-import app.qthrone.mobile.widget.QRCodeDialog
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.RouteManager
+import app.rawline.mobile.database.RouteRepo
+import app.rawline.mobile.databinding.LayoutProgressListBinding
+import app.rawline.mobile.databinding.LayoutRouteProfileItemBinding
+import app.rawline.mobile.group.RemoteRouteUpdater
+import app.rawline.mobile.ktx.FixedLinearLayoutManager
+import app.rawline.mobile.ktx.confirmAction
+import app.rawline.mobile.ktx.dp2px
+import app.rawline.mobile.ktx.needReload
+import app.rawline.mobile.ktx.onMainDispatcher
+import app.rawline.mobile.ktx.readableMessage
+import app.rawline.mobile.ktx.runOnLifecycleDispatcher
+import app.rawline.mobile.ktx.showAllowingStateLoss
+import app.rawline.mobile.ktx.snackbar
+import app.rawline.mobile.route.RouteProfile
+import app.rawline.mobile.route.RouteShare
+import app.rawline.mobile.route.RuleType
+import app.rawline.mobile.ui.route.RouteImports
+import app.rawline.mobile.ui.route.RouteJson
+import app.rawline.mobile.ui.route.RouteProfileActivity
+import app.rawline.mobile.ui.route.RouteQuickSwitch
+import app.rawline.mobile.ui.route.RouteTexts
+import app.rawline.mobile.ui.settings.RoutingSettingsFragment
+import app.rawline.mobile.widget.QRCodeDialog
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import app.rawline.mobile.route.ProviderRouting
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -93,7 +95,8 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
         list.applyListInsets()
         list.layoutManager = FixedLinearLayoutManager(list)
         list.adapter = adapter
-        view.setBackgroundColor(MobilePalette.background)
+        reorder.attachToRecyclerView(list)
+        view.setBackgroundColor(MobilePalette.screen)
         MobileViewStyle.apply(view)
         onServiceStateChanged()
         RouteManager.addListener(onRoutesChanged)
@@ -118,7 +121,8 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
             val profiles = RouteManager.all()
             val currentId = RouteManager.current().id
             onMainDispatcher {
-                if (view != null) adapter.submit(profiles, currentId)
+                // A reload in the middle of a drag would pull the row out from under the finger.
+                if (view != null && !dragging) adapter.submit(profiles, currentId)
             }
         }
     }
@@ -127,6 +131,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
         when (item.itemId) {
             R.id.action_route_new_structured -> newProfile(remote = false)
             R.id.action_route_new_remote -> newProfile(remote = true)
+            R.id.action_route_new_provider -> editor.launch(Intent(requireContext(), ProviderRouteActivity::class.java))
             R.id.action_route_import -> importFromClipboard()
             // The scanner hands route links to MainActivity, which prompts and comes back here.
             R.id.action_route_scan -> startActivity(Intent(requireContext(), ScannerActivity::class.java))
@@ -153,6 +158,10 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
     }
 
     private fun edit(id: Long) {
+        RouteManager.get(id)?.takeIf { ProviderRouting.stored(it) != null }?.let {
+            editor.launch(Intent(requireContext(), ProviderRouteActivity::class.java).putExtra(ProviderRouteActivity.EXTRA_ID, id))
+            return
+        }
         editor.launch(Intent(requireContext(), RouteProfileActivity::class.java).putExtra(RouteProfileActivity.EXTRA_PROFILE_ID, id))
     }
 
@@ -273,7 +282,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
                 getString(R.string.route_import_clipboard_profile, RouteImports.nameOf(activity, profile))
             }
             val prompt = RouteImports.withDnsNote(activity, what, profile)
-            MaterialAlertDialogBuilder(activity)
+            MobileAlertDialogBuilder(activity)
                 .setTitle(R.string.route_import_clipboard_title)
                 .setMessage(RouteImports.withNotes(activity, prompt, imported.warnings))
                 .setPositiveButton(R.string.yes) { _, _ -> applyImported(profile, imported.legacyArray) }
@@ -296,7 +305,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
             setPadding(dp2px(20), dp2px(12), dp2px(20), 0)
             addView(layout)
         }
-        val dialog = MaterialAlertDialogBuilder(activity)
+        val dialog = MobileAlertDialogBuilder(activity)
             .setTitle(R.string.route_import_paste_title)
             .setView(container)
             .setPositiveButton(android.R.string.ok, null)
@@ -308,6 +317,11 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
                 val entries = RouteImports.remoteEntries(activity, text) ?: return@setOnClickListener
                 dialog.dismiss()
                 RouteImports.promptRemote(activity, entries)
+                return@setOnClickListener
+            }
+            RouteImports.urlEntry(text)?.let { entry ->
+                dialog.dismiss()
+                RouteImports.promptRemote(activity, listOf(entry))
                 return@setOnClickListener
             }
             activity.lifecycleScope.launch {
@@ -356,7 +370,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
                 return@launch
             }
             val countries = Array<CharSequence>(bundles.size) { bundles[it].country }
-            MaterialAlertDialogBuilder(activity)
+            MobileAlertDialogBuilder(activity)
                 .setTitle(R.string.route_download_profiles)
                 .setItems(countries) { _, which -> RouteImports.promptRemote(activity, bundles[which].entries) }
                 .setNegativeButton(android.R.string.cancel, null)
@@ -388,7 +402,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
         binding.progressLinear.isVisible = true
         binding.progressLinear.max = ids.size
         val cancelled = AtomicBoolean(false)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val dialog = MobileAlertDialogBuilder(requireContext())
             .setTitle(R.string.route_update_title)
             .setView(binding.root)
             .setNegativeButton(android.R.string.cancel, null)
@@ -458,7 +472,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
         onServiceStateChanged()
         val binding = LayoutProgressListBinding.inflate(layoutInflater)
         binding.progress.setText(R.string.route_rule_sets_running)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val dialog = MobileAlertDialogBuilder(requireContext())
             .setTitle(R.string.route_rule_sets_title)
             .setView(binding.root)
             .setCancelable(false)
@@ -485,7 +499,7 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
     private fun refreshRepository() {
         val binding = LayoutProgressListBinding.inflate(layoutInflater)
         binding.progress.setText(R.string.route_repo_running)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
+        val dialog = MobileAlertDialogBuilder(requireContext())
             .setTitle(R.string.route_refresh_repo)
             .setView(binding.root)
             .setCancelable(false)
@@ -508,6 +522,31 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
 
     // ------------------------------------------------------------------------------------------------ list
 
+    private var dragging = false
+    /** Hold a profile and drag it: the same gesture as the servers on the home screen. */
+    private val reorder = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0) {
+        override fun onMove(view: RecyclerView, from: RecyclerView.ViewHolder, to: RecyclerView.ViewHolder): Boolean {
+            adapter.move(from.bindingAdapterPosition, to.bindingAdapterPosition)
+            return true
+        }
+        override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) {}
+        override fun onSelectedChanged(holder: RecyclerView.ViewHolder?, state: Int) {
+            super.onSelectedChanged(holder, state)
+            if (state == ItemTouchHelper.ACTION_STATE_DRAG && holder != null) {
+                dragging = true
+                holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                holder.itemView.animate().scaleX(.98f).scaleY(.98f).setDuration(90).start()
+            }
+        }
+        override fun clearView(view: RecyclerView, holder: RecyclerView.ViewHolder) {
+            super.clearView(view, holder)
+            holder.itemView.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+            dragging = false
+            val ids = adapter.profiles.map { it.id }
+            runOnLifecycleDispatcher { RouteManager.saveOrder(ids) }
+        }
+    })
+
     private inner class ProfileAdapter : RecyclerView.Adapter<ProfileHolder>() {
         var profiles: List<RouteProfile> = emptyList()
         var currentId = 0L
@@ -521,6 +560,12 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
             this.profiles = profiles
             this.currentId = currentId
             notifyDataSetChanged()
+        }
+
+        fun move(from: Int, to: Int) {
+            if (from !in profiles.indices || to !in profiles.indices) return
+            profiles = profiles.toMutableList().apply { add(to, removeAt(from)) }
+            notifyItemMoved(from, to)
         }
 
         fun setCurrent(id: Long) {
@@ -553,8 +598,19 @@ class RouteFragment : ToolbarFragment(R.layout.layout_route), Toolbar.OnMenuItem
         fun bind(profile: RouteProfile, current: Boolean) {
             MobileViewStyle.apply(itemView)
             val context = itemView.context
+            // The same row as everywhere else in the app, the chosen profile marked as the chosen server is.
+            val card = binding.root
+            if (MobileStyle.new) {
+                card.setCardBackgroundColor(android.graphics.Color.TRANSPARENT); card.strokeWidth = 0; card.cardElevation = 0f
+                card.radius = MobilePalette.rowDp * context.resources.displayMetrics.density
+                card.getChildAt(0).background = if (current) MobilePalette.selectedShape(context) else MobilePalette.rowShape(context)
+            } else if (current) {
+                card.strokeColor = MobilePalette.accent(context); card.strokeWidth = (context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+            }
+            binding.profileSummary.setTextColor(MobilePalette.muted)
+            binding.profileRemote.setTextColor(MobilePalette.muted)
             binding.profileName.text = profile.name
-            binding.profileName.setTypeface(null, if (current) Typeface.BOLD else Typeface.NORMAL)
+            binding.profileName.setTypeface(binding.profileName.typeface,if (current) Typeface.BOLD else Typeface.NORMAL)
             binding.activeMark.isVisible = current
             binding.profileSummary.text = if (profile.is_raw) getString(R.string.route_raw_summary) else getString(
                 R.string.route_item_default_outbound, RouteTexts.outboundName(context, profile.default_outbound_id, emptyMap())

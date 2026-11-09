@@ -1,14 +1,14 @@
-package app.qthrone.mobile.ui.profile
+package app.rawline.mobile.ui.profile
 
 import android.content.Context
 import android.content.Intent
-import app.qthrone.mobile.database.ProxyEntity
-import app.qthrone.mobile.outbound.OutboundFactory
+import app.rawline.mobile.database.ProxyEntity
+import app.rawline.mobile.outbound.OutboundFactory
 
 /** The editor activity of a desktop profile type string ("custom" and unknown types open the raw JSON editor). */
 fun settingsActivityFor(type: String): Class<out ProfileSettingsActivity<*>> =
     when (OutboundFactory.canonicalType(type)) {
-        "qwdtt", "csqtt", "wdttplus", "openflux", "openfluxkey", "olcrtc", "dnstt", "vaydns", "slipstream", "masterdns", "cottendns", "soar", "s3bypass", "sstp" -> NativeTransportSettingsActivity::class.java
+        "qwdtt", "csqtt", "mrtt", "wdttplus", "freeturn", "openflux", "openfluxkey", "olcrtc", "dnstt", "vaydns", "slipstream", "masterdns", "cottendns", "soar", "s3bypass", "sstp" -> NativeTransportSettingsActivity::class.java
         "socks" -> SocksSettingsActivity::class.java
         "http" -> HttpSettingsActivity::class.java
         "shadowsocks" -> ShadowsocksSettingsActivity::class.java

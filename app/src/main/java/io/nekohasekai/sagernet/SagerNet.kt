@@ -1,4 +1,4 @@
-package app.qthrone.mobile
+package app.rawline.mobile
 
 import android.annotation.SuppressLint
 import android.app.*
@@ -17,21 +17,21 @@ import android.os.UserManager
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import app.qthrone.mobile.appwidget.Widgets
-import app.qthrone.mobile.bg.CoreRuntime
-import app.qthrone.mobile.bg.SagerConnection
-import app.qthrone.mobile.bg.autoselector.AutoSelectorRuntime
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.ui.SeasonalPolicy
-import app.qthrone.mobile.database.SettingsMapper
-import app.qthrone.mobile.group.RemoteRouteUpdater
-import app.qthrone.mobile.group.SubscriptionScheduler
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.isOss
-import app.qthrone.mobile.ktx.runOnDefaultDispatcher
-import app.qthrone.mobile.ui.MainActivity
-import app.qthrone.mobile.update.UpdateManager
-import app.qthrone.mobile.utils.*
+import app.rawline.mobile.appwidget.Widgets
+import app.rawline.mobile.bg.CoreRuntime
+import app.rawline.mobile.bg.SagerConnection
+import app.rawline.mobile.bg.autoselector.AutoSelectorRuntime
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.ui.SeasonalPolicy
+import app.rawline.mobile.database.SettingsMapper
+import app.rawline.mobile.group.RemoteRouteUpdater
+import app.rawline.mobile.group.SubscriptionScheduler
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.isOss
+import app.rawline.mobile.ktx.runOnDefaultDispatcher
+import app.rawline.mobile.ui.MainActivity
+import app.rawline.mobile.update.UpdateManager
+import app.rawline.mobile.utils.*
 import kotlinx.coroutines.DEBUG_PROPERTY_NAME
 import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
 import java.io.File
@@ -59,6 +59,8 @@ class SagerNet : Application(),
 
         if (isMainProcess || isBgProcess) {
             SettingsMapper.installOutboundHooks()
+            // 3.3.1 tests over HTTPS; an address the user picked stays as it is.
+            if (DataStore.testUrl == "http://www.google.com/generate_204") DataStore.testUrl = "https://www.google.com/generate_204"
             if (isBgProcess) {
                 // The tile, shortcuts, widgets and the boot receiver start the foreground service from here.
                 updateNotificationChannels()
@@ -86,7 +88,7 @@ class SagerNet : Application(),
 
         if (isMainProcess) {
             if (!DataStore.configurationStore.getBoolean("mobile_gray_300_color_migrated", false)) {
-                DataStore.appTheme = app.qthrone.mobile.utils.Theme.GREY
+                DataStore.appTheme = app.rawline.mobile.utils.Theme.GREY
                 DataStore.useSystemTheme = false
                 DataStore.configurationStore.putBoolean("mobile_gray_300_color_migrated", true)
             }
@@ -123,7 +125,7 @@ class SagerNet : Application(),
             RemoteRouteUpdater.schedule(keepExisting = true)
             SubscriptionScheduler.schedule(keepExisting = true)
             Widgets.watchSelection(this)
-            app.qthrone.mobile.route.ProviderGeoAssets.listen()
+            app.rawline.mobile.route.ProviderGeoAssets.listen()
         }
 
         if (BuildConfig.DEBUG) {

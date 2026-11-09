@@ -1,4 +1,4 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import android.annotation.SuppressLint
 import android.os.Handler
@@ -11,9 +11,9 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.os.HandlerCompat
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.ui.CaptchaAddressPolicy
-import app.qthrone.mobile.ui.CaptchaAutoScripts
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.ui.CaptchaAddressPolicy
+import app.rawline.mobile.ui.CaptchaAutoScripts
 import org.json.JSONArray
 import kotlin.random.Random
 
@@ -102,7 +102,7 @@ internal object HeadlessCaptcha {
                     aimed = true
                     later(CaptchaAutoScripts.wdttPlusThinkMs()) {
                         touchPlus(target); clickedAt = SystemClock.uptimeMillis()
-                        later(3_500) { web.evaluateJavascript("!!window.__qthroneCheckSent") { if (it != "true") finish("error:auto_check_not_sent") } }
+                        later(3_500) { web.evaluateJavascript("!!window.__rawlineCheckSent") { if (it != "true") finish("error:auto_check_not_sent") } }
                         later(8_000) { finish("error:auto_no_result") }
                     }
                 }

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,11 +10,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.DeployServer
-import app.qthrone.mobile.deploy.DeployStore
-import app.qthrone.mobile.deploy.QwdttAdmin
-import app.qthrone.mobile.deploy.WdttPlusAdmin
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.DeployServer
+import app.rawline.mobile.deploy.DeployStore
+import app.rawline.mobile.deploy.QwdttAdmin
+import app.rawline.mobile.deploy.WdttPlusAdmin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,7 +32,7 @@ class ServerActivity : ServerScreenActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(MobilePalette.background))
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen) }
         toolbar = Toolbar(this).apply {
             setTitleTextColor(MobilePalette.text); setSubtitleTextColor(MobilePalette.text)
             setNavigationIcon(R.drawable.baseline_arrow_back_24); setNavigationOnClickListener { finish() }
@@ -55,6 +55,12 @@ class ServerActivity : ServerScreenActivity() {
             if (loaded == null) { Toast.makeText(this@ServerActivity, "Не удалось открыть VPS", Toast.LENGTH_LONG).show(); finish(); return@launch }
             server = loaded; render(loaded)
         }
+    }
+
+    private fun ownerConfig(server: DeployServer) {
+        val link = app.rawline.mobile.deploy.DeployConfig.display(server["config"])
+        if (link.isBlank()) { Toast.makeText(this, "Конфиг появится после успешной установки", Toast.LENGTH_LONG).show(); return }
+        ui.sheet(server["name"].ifBlank { server["host"] }) { sheet, _ -> sheet.addView(ui.qrRow(link)); sheet.addView(ui.linkRow("Ссылка", link, lines = 4)) }
     }
 
     private fun render(server: DeployServer) {
@@ -82,9 +88,20 @@ class ServerActivity : ServerScreenActivity() {
                     else Toast.makeText(this, "Доступно после установки сервера из приложения", Toast.LENGTH_LONG).show()
                 })
             }
-            "csqtt" -> body.addView(ui.tile("Панель сервера", "Пароли, устройства и звонки в веб-панели CSQTT", R.drawable.baseline_public_24) {
-                startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(server.panelUrl())))
+            "mrtt" -> body.addView(ui.tile("Конфиги и сервер", "Конфиги, подписки, группы, маршруты, прокси, настройки, статистика и логи", R.drawable.ic_baseline_vpn_key_24) {
+                if (app.rawline.mobile.deploy.MrttAdmin(server).available) startActivity(Intent(this, MrttServerActivity::class.java).putExtra("server", server.id))
+                else Toast.makeText(this, "Доступно после установки сервера из приложения", Toast.LENGTH_LONG).show()
             })
+            "freeturn" -> body.addView(ui.tile("Клиенты", "Ссылки и WireGuard для каждого устройства", R.drawable.ic_baseline_vpn_key_24) {
+                if (app.rawline.mobile.deploy.FreeturnAdmin(server).available) startActivity(Intent(this, FreeturnClientsActivity::class.java).putExtra("server", server.id))
+                else Toast.makeText(this, "Доступно после установки сервера из приложения", Toast.LENGTH_SHORT).show()
+            })
+            "csqtt" -> {
+                body.addView(ui.tile("Панель сервера", "Пароли, устройства и звонки в веб-панели CSQTT", R.drawable.baseline_public_24) {
+                    startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(server.panelUrl())))
+                }, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = ui.dp(8) })
+                body.addView(ui.tile("Конфиг", "Ссылка и QR-код подключения к этому серверу", R.drawable.ic_baseline_vpn_key_24) { ownerConfig(server) })
+            }
             "wdttplus" -> listOf(
                 Triple("Клиенты и сервер", "Пароли, хеши, устройства, сроки и настройки сервера", R.drawable.ic_mobile_people) to WdttPlusClientsActivity::class.java,
                 Triple("Выходной IP и прокси", "Прокси, WARP, WireGuard или второй сервер для выхода", R.drawable.ic_hardware_router) to WdttPlusExitActivity::class.java,

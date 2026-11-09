@@ -1,14 +1,14 @@
-package app.qthrone.mobile.update
+package app.rawline.mobile.update
 
 import android.content.Context
 import android.os.Build
-import app.qthrone.mobile.BuildConfig
-import app.qthrone.mobile.R
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.USER_AGENT
-import app.qthrone.mobile.ktx.newHttpClient
-import app.qthrone.mobile.ktx.readableMessage
+import app.rawline.mobile.BuildConfig
+import app.rawline.mobile.R
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.USER_AGENT
+import app.rawline.mobile.ktx.newHttpClient
+import app.rawline.mobile.ktx.readableMessage
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
@@ -18,7 +18,7 @@ import java.io.IOException
 import java.io.InputStream
 
 /**
- * GitHub releases of ThroneForAndroid (the desktop's CheckUpdate: `allow_beta_update` admits pre-releases). A release
+ * GitHub releases of RawlineForAndroid (the desktop's CheckUpdate: `allow_beta_update` admits pre-releases). A release
  * built by CI carries verification metadata in its body; legacy JSON assets remain supported.
  */
 object UpdateChecker {
@@ -27,12 +27,11 @@ object UpdateChecker {
     const val RELEASES_PAGE = "https://github.com/$REPOSITORY/releases"
     private const val RELEASES_API = "https://api.github.com/repos/$REPOSITORY/releases?per_page=20"
     private const val MANIFEST = "qthrone-update.json"
-    private const val LEGACY_MANIFEST = "throne-update.json"
     private const val MAX_MANIFESTS = 5
     private const val MAX_MANIFEST_BYTES = 256 * 1024
 
     private fun hasManifest(release: Release) = UpdateReleaseNotes.containsMetadata(release.body) ||
-        release.assets.any { it.name == MANIFEST || it.name == LEGACY_MANIFEST }
+        release.assets.any { it.name == MANIFEST }
 
     class Asset(val name: String, val size: Long, val url: String)
 
@@ -85,7 +84,7 @@ object UpdateChecker {
         val installed = Semver.parse(BuildConfig.VERSION_NAME)
         val candidates = fetchReleases(context, client)
             .filter { release -> allowBeta || !release.prerelease }
-            .mapNotNull { release -> Semver.parse(release.tag)?.let { release to it } }
+            .mapNotNull { release -> Semver.ofTag(release.tag)?.let { release to it } }
             .filter { (release, version) -> hasManifest(release) || installed == null || Semver.compare(version, installed) > 0 }
             .sortedWith { a, b -> Semver.compare(b.second, a.second) }
             .map { it.first }
@@ -95,7 +94,7 @@ object UpdateChecker {
         for (release in candidates.filter(::hasManifest).take(MAX_MANIFESTS)) {
             val manifest = try {
                 UpdateReleaseNotes.metadata(release.body) ?:
-                    fetchManifest(client, release.assets.firstOrNull { it.name == MANIFEST } ?: release.assets.first { it.name == LEGACY_MANIFEST })
+                    fetchManifest(client, release.assets.first { it.name == MANIFEST })
             } catch (e: Exception) {
                 Logs.w("Update manifest of ${release.tag}: ${e.readableMessage}")
                 continue
@@ -111,14 +110,14 @@ object UpdateChecker {
         val legacy = candidates.firstOrNull { !hasManifest(it) } ?: return Result.UpToDate
         return Result.Available(
             Offer(
-                legacy, legacy.tag.removePrefix("v"), 0, null, null, null,
+                legacy, legacy.tag.removePrefix(Semver.TAG_PREFIX), 0, null, null, null,
                 context.getString(R.string.update_reason_no_manifest)
             )
         )
     }
 
     private fun offerOf(context: Context, release: Release, manifest: JSONObject): Offer {
-        val versionName = manifest.optString("versionName").ifEmpty { release.tag.removePrefix("v") }
+        val versionName = manifest.optString("versionName").ifEmpty { release.tag.removePrefix(Semver.TAG_PREFIX) }
         val versionCode = manifest.getLong("versionCode")
         val assets = manifest.optJSONObject("assets") ?: JSONObject()
         fun browserOnly(abi: String?, reason: String) = Offer(release, versionName, versionCode, abi, null, null, reason)

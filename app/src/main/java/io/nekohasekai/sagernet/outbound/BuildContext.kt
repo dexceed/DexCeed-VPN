@@ -1,4 +1,4 @@
-package app.qthrone.mobile.outbound
+package app.rawline.mobile.outbound
 
 /**
  * Every build-time global the desktop's Build() paths read from SettingsRepo (include/database/SettingsRepo.h),
@@ -6,6 +6,8 @@ package app.qthrone.mobile.outbound
  * per config generation.
  */
 data class BuildContext(
+    /** MASQUE WARP speaks QUIC to UDP/443, which XTLS Vision refuses unless told otherwise. */
+    val visionUdp443: Boolean = false,
     /** SettingsRepo.h:161 skip_cert — TLS.cpp:407. */
     val skipCert: Boolean = false,
     /** SettingsRepo.h:162 utlsFingerprint — TLS.cpp:60-63, xrayStreamSetting.cpp:311-313 / 376-378. */
