@@ -24,3 +24,6 @@ __pycache__/
 
 # native libraries staged by scripts/stage_native_transports.py and buildScript/dexceed_mobile_inputs.sh
 /deployment/
+
+# Generated from the pinned native transport archives/APK.
+/app/src/main/assets/carrier-licenses/

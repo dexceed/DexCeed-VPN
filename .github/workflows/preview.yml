@@ -92,7 +92,7 @@ jobs:
             sleep 3
           done
           sleep 30
-          PACKAGE=app.rawline.mobile
+          PACKAGE=online.dexceed.vpn
           launch() {
             COMPONENT=$("$ADB" shell cmd package resolve-activity --brief -c android.intent.category.LAUNCHER "$PACKAGE" | tail -n 1 | tr -d '\r')
             echo "launcher: $COMPONENT"
