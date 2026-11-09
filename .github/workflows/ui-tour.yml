@@ -73,7 +73,7 @@ jobs:
           "$ANDROID_HOME/platform-tools/adb" install -r "$UNIVERSAL"
           mkdir -p ui-screenshots
           printf '%s\n' "PASS: ABI APK installed, universal APK installed over it with the same signature" > ui-screenshots/universal-install-result.txt
-          PACKAGE=$("$ANDROID_HOME/platform-tools/adb" shell pm list packages | sed -n 's/^package:\(app.rawline.mobile[^[:space:]]*\).*/\1/p' | tr -d '\r')
+          PACKAGE=$("$ANDROID_HOME/platform-tools/adb" shell pm list packages | sed -n 's/^package:\(online.dexceed.vpn[^[:space:]]*\).*/\1/p' | tr -d '\r')
           test -n "$PACKAGE"
           "$ANDROID_HOME/platform-tools/adb" shell dumpsys package "$PACKAGE" | grep -F 'primaryCpuAbi=x86_64'
       - name: Download UI tour test
@@ -88,7 +88,7 @@ jobs:
         run: |
           ADB="$ANDROID_HOME/platform-tools/adb"
           "$ADB" install "$(find ui-regression-apk -name '*.apk' -print -quit)"
-          TEST_PACKAGE=$("$ADB" shell pm list packages | sed -n 's/^package:\(app.rawline.mobile[^[:space:]]*\.test\).*/\1/p' | tr -d '\r')
+          TEST_PACKAGE=$("$ADB" shell pm list packages | sed -n 's/^package:\(online.dexceed.vpn[^[:space:]]*\.test\).*/\1/p' | tr -d '\r')
           PACKAGE=${TEST_PACKAGE%.test}
           "$ADB" shell cmd locale set-app-locales "$PACKAGE" --locales ${{ inputs.locale }} || true
           mkdir -p ui-tour
