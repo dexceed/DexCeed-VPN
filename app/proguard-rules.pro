@@ -69,4 +69,4 @@
 
 # Native code uses these Java bindings through JNI.
 -keep class go.** { *; }
--keep class app.qthrone.core.** { *; }
+-keep class app.rawline.core.** { *; }
