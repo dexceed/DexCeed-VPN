@@ -1,0 +1,3 @@
+<resources>
+    <string name="dexceed_package_access_needed">Allow access to the installed app list so VPN traffic can be attributed safely. Other permissions are not needed.</string>
+</resources>

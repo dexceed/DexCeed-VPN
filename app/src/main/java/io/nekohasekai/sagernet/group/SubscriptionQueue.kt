@@ -170,6 +170,9 @@ object SubscriptionQueue {
         val wrapped = try { ProviderLinks.decodeChecked(url) } catch (_: Exception) { return -1L }
         val content = wrapped?.data ?: url.trim()
         if (!SubscriptionCrypto.isHttpUrl(content) && (wrapped != null || !content.startsWith("content://", true))) return -1L
+        DexceedSubscriptionUrl.canonical(content)?.let { managed ->
+            return runBlocking { DexceedSubscription.subscribe(managed, name.trim()) }
+        }
         val group = try {
             runBlocking {
                 GroupRepo.add(

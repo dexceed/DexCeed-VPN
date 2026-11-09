@@ -124,6 +124,10 @@ class SagerNet : Application(),
             runOnDefaultDispatcher { File(filesDir, "custom_icon").deleteRecursively() }
             RemoteRouteUpdater.schedule(keepExisting = true)
             SubscriptionScheduler.schedule(keepExisting = true)
+            runOnDefaultDispatcher {
+                runCatching { app.rawline.mobile.group.DexceedSubscription.migrateExisting() }
+                    .onFailure { app.rawline.mobile.ktx.Logs.w("DexCeed subscription setup failed", it) }
+            }
             Widgets.watchSelection(this)
             app.rawline.mobile.route.ProviderGeoAssets.listen()
         }

@@ -569,7 +569,20 @@ class MainActivity : ThemedActivity(),
     }
 
     /** Wi-Fi rules of the current route profile ask for location access once before a start from here. */
+    private val packageAccess = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) startFromUi() else snackbar(R.string.dexceed_package_access_needed).show()
+    }
+
     private fun startFromUi() {
+        // ColorOS exposes package visibility as an additional runtime permission. Keep the TUN guard enabled;
+        // without this permission it would reject legitimate application UIDs as unknown owners.
+        val permission = "com.android.permission.GET_INSTALLED_APPS"
+        if (DataStore.blockUnownedTun && android.os.Build.VERSION.SDK_INT >= 29 &&
+            runCatching { packageManager.getPermissionInfo(permission, 0) }.isSuccess &&
+            checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            packageAccess.launch(permission)
+            return
+        }
         if (DataStore.wifiPermissionAsked || WifiStateAccess.status(this) == WifiStateAccess.Status.OK) {
             return launchConnect()
         }

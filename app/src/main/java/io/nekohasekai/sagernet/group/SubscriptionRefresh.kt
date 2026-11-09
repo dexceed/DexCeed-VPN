@@ -51,7 +51,14 @@ internal object SubscriptionRefresh {
         if (group.archive) return
         val options = group.subOptions
 
-        val fetched = SubscriptionFetch.fetch(group.url.trim(), group.name, RequestIdentity.resolve(group))
+        val identity = RequestIdentity.resolve(group)
+        val primary = SubscriptionFetch.fetch(group.url.trim(), group.name, identity)
+        // Bootstrap must also work before the VPN is connected. Only our canonical delivery endpoint has
+        // this fixed HTTPS mirror; credentials and HWID stay scoped to the same owned service.
+        val canonical = DexceedSubscriptionUrl.canonical(group.url)
+        val fetched = if (primary.error != null && canonical != null && group.url == canonical) {
+            SubscriptionFetch.fetch(canonical.replace("https://sub.dexceed.online/", "https://tw-origin.dexceed.online/"), group.name, identity)
+        } else primary
         if (fetched.error != null) {
             if (notifyErrors) SubscriptionQueue.error(gid, fetched.error)
             return
