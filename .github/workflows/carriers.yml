@@ -6,7 +6,7 @@ on:
       client:
         description: Transport clients to build
         type: choice
-        options: [all, sstp, dns]
+        options: [all, sstp, dns, freeturn, mrtt]
         default: all
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
       - name: Upload native clients and provenance
         uses: actions/upload-artifact@v7
         with:
-          name: qThrone-carriers-${{ matrix.abi }}
+          name: Rawline-carriers-${{ matrix.abi }}
           path: deployment/carriers/${{ matrix.abi }}/
           if-no-files-found: error
   sstp:
@@ -61,8 +61,58 @@ jobs:
         run: bash scripts/build_sstp.sh '${{ matrix.abi }}'
       - uses: actions/upload-artifact@v7
         with:
-          name: qThrone-SSTP-${{ matrix.abi }}
-          path: qthrone-sstp-*.tar.gz
+          name: Rawline-SSTP-${{ matrix.abi }}
+          path: rawline-sstp-*.tar.gz
+          if-no-files-found: error
+  freeturn:
+    if: inputs.client == 'freeturn'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install NDK
+        run: |
+          echo y | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'ndk;28.2.13676358'
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+      - name: Test and build FreeTurn from the pinned source
+        run: bash scripts/build_freeturn.sh '${{ matrix.abi }}'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Rawline-FreeTurn-${{ matrix.abi }}
+          path: rawline-freeturn-*.tar.gz
+          if-no-files-found: error
+  mrtt:
+    if: inputs.client == 'mrtt'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install NDK
+        run: |
+          echo y | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'ndk;28.2.13676358'
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+      - name: Build MRTT from the pinned source
+        run: bash scripts/build_mrtt.sh '${{ matrix.abi }}'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Rawline-MRTT-${{ matrix.abi }}
+          path: rawline-mrtt-*.tar.gz
           if-no-files-found: error
   dns:
     if: inputs.client == 'dns'
@@ -86,6 +136,6 @@ jobs:
         run: bash scripts/build_dns_engines.sh '${{ matrix.abi }}'
       - uses: actions/upload-artifact@v7
         with:
-          name: qThrone-DNS-${{ matrix.abi }}
-          path: qthrone-dns-*.tar.gz
+          name: Rawline-DNS-${{ matrix.abi }}
+          path: rawline-dns-*.tar.gz
           if-no-files-found: error

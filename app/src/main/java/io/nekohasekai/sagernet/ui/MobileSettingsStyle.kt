@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -18,7 +18,7 @@ object MobileSettingsStyle {
     fun apply(fragment: PreferenceFragmentCompat, root: View) {
         if(styledRoots.put(root,true)==true) return
         // Keep the old screen consistent until theme recreation replaces every row.
-        val background=MobilePalette.background
+        val background=MobilePalette.screen
         val surface=MobilePalette.surface
         val textColor=MobilePalette.text
         val muted=MobilePalette.muted
@@ -35,19 +35,19 @@ object MobileSettingsStyle {
                 }
                 if(fragment is SettingsPreferenceFragment && preference !is PreferenceCategory) {
                     val icon=when {
-                        preference.key=="qmobileLogs" -> app.qthrone.mobile.R.drawable.ic_mobile_logs
-                        preference.key=="qmobileVkRelay" -> app.qthrone.mobile.R.drawable.ic_mobile_vk
-                        preference.key=="qmobileTun" -> app.qthrone.mobile.R.drawable.ic_mobile_tun
-                        preference.key=="qmobileCore" -> app.qthrone.mobile.R.drawable.ic_mobile_core
-                        preference.key=="settingsBackup" -> app.qthrone.mobile.R.drawable.ic_mobile_backup
-                        preference.fragment?.contains("UpdateSettings")==true -> app.qthrone.mobile.R.drawable.ic_mobile_update
-                        preference.fragment?.contains("Appearance")==true -> app.qthrone.mobile.R.drawable.ic_mobile_pumpkin
-                        preference.fragment?.contains("Testing")==true -> app.qthrone.mobile.R.drawable.ic_mobile_test
-                        preference.key=="qmobileRouting" -> app.qthrone.mobile.R.drawable.ic_mobile_route
-                        preference.fragment?.contains("Dns")==true -> app.qthrone.mobile.R.drawable.ic_mobile_globe
-                        preference.fragment?.contains("Subscription")==true -> app.qthrone.mobile.R.drawable.ic_mobile_subscriptions
-                        preference.key=="qmobileUpdate" -> app.qthrone.mobile.R.drawable.ic_mobile_refresh
-                        else -> app.qthrone.mobile.R.drawable.ic_mobile_settings
+                        preference.key=="qmobileLogs" -> app.rawline.mobile.R.drawable.ic_mobile_logs
+                        preference.key=="qmobileVkRelay" -> app.rawline.mobile.R.drawable.ic_mobile_vk
+                        preference.key=="qmobileTun" -> app.rawline.mobile.R.drawable.ic_mobile_tun
+                        preference.key=="qmobileCore" -> app.rawline.mobile.R.drawable.ic_mobile_core
+                        preference.key=="settingsBackup" -> app.rawline.mobile.R.drawable.ic_mobile_backup
+                        preference.fragment?.contains("UpdateSettings")==true -> app.rawline.mobile.R.drawable.ic_mobile_update
+                        preference.fragment?.contains("Appearance")==true -> app.rawline.mobile.R.drawable.ic_mobile_pumpkin
+                        preference.fragment?.contains("Testing")==true -> app.rawline.mobile.R.drawable.ic_mobile_test
+                        preference.key=="qmobileRouting" -> app.rawline.mobile.R.drawable.ic_mobile_route
+                        preference.fragment?.contains("Dns")==true -> app.rawline.mobile.R.drawable.ic_mobile_globe
+                        preference.fragment?.contains("Subscription")==true -> app.rawline.mobile.R.drawable.ic_mobile_subscriptions
+                        preference.key=="qmobileUpdate" -> app.rawline.mobile.R.drawable.ic_mobile_refresh
+                        else -> app.rawline.mobile.R.drawable.ic_mobile_settings
                     }
                     preference.setIcon(icon)
                 }
@@ -64,10 +64,13 @@ object MobileSettingsStyle {
         fragment.setDividerHeight(0)
         list.isVerticalScrollBarEnabled=false
         list.itemAnimator=null
+        // Rows scrolled off keep their views: coming back binds nothing and inflates nothing.
+        list.setItemViewCacheSize(24)
         list.setBackgroundColor(background)
         val density=list.resources.displayMetrics.density
         list.setPadding((16*density).toInt(), (4*density).toInt(), (16*density).toInt(), (16*density).toInt())
         list.clipToPadding=false
+        // One entrance when a settings screen opens, rows rising in turn.
         list.addItemDecoration(object: RecyclerView.ItemDecoration() {
             override fun getItemOffsets(outRect: android.graphics.Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                 val position=parent.getChildAdapterPosition(view)
@@ -95,8 +98,8 @@ object MobileSettingsStyle {
                 view.minimumHeight=0
                 view.setPadding(view.paddingLeft,(4*density).toInt(),view.paddingRight,(2*density).toInt())
             } else {
-                view.minimumHeight=(48*density).toInt()
-                view.setPaddingRelative((12*density).toInt(),(8*density).toInt(),(12*density).toInt(),(8*density).toInt())
+                view.minimumHeight=((if(MobileStyle.new) 56 else 48)*density).toInt()
+                view.setPaddingRelative(((if(MobileStyle.new) 14 else 12)*density).toInt(),(8*density).toInt(),(12*density).toInt(),(8*density).toInt())
             }
             val oldCopy=view.findViewWithTag<View>("socks-copy")
             (oldCopy?.parent as? android.view.ViewGroup)?.removeView(oldCopy)
@@ -106,21 +109,21 @@ object MobileSettingsStyle {
                     val widget=container.findViewById<android.view.ViewGroup>(android.R.id.widget_frame)
                     widget?.visibility=View.VISIBLE
                     widget?.addView(android.widget.ImageButton(list.context).apply {
-                        tag="socks-copy";contentDescription=list.context.getString(app.qthrone.mobile.R.string.action_copy)
-                        setImageResource(app.qthrone.mobile.R.drawable.ic_mobile_clipboard)
+                        tag="socks-copy";contentDescription=list.context.getString(app.rawline.mobile.R.string.action_copy)
+                        setImageResource(app.rawline.mobile.R.drawable.ic_mobile_clipboard)
                         imageTintList=if(preference?.key == "vkRelayAccount" && preference.icon is androidx.core.graphics.drawable.RoundedBitmapDrawable) null else dimmedWhenDisabled(accent)
                         setBackgroundColor(Color.TRANSPARENT)
                         setOnClickListener {
-                            val value=if(preference?.key=="inbound_user") app.qthrone.mobile.database.DataStore.inboundUser else app.qthrone.mobile.database.DataStore.inboundPass
-                            app.qthrone.mobile.SagerNet.trySetPrimaryClip(value)
+                            val value=if(preference?.key=="inbound_user") app.rawline.mobile.database.DataStore.inboundUser else app.rawline.mobile.database.DataStore.inboundPass
+                            app.rawline.mobile.SagerNet.trySetPrimaryClip(value)
                         }
                     },android.view.ViewGroup.LayoutParams((40*density).toInt(),(40*density).toInt()))
                 }
             }
-            view.background=android.graphics.drawable.GradientDrawable().apply {
+            view.background=if(MobileStyle.new && !category && !warning) MobilePalette.rowShape(root.context) else android.graphics.drawable.GradientDrawable().apply {
                 setColor(if(category || warning) background else surface)
-                cornerRadius=5*density
-                if(!category && !warning) setStroke(1,MobilePalette.outline)
+                cornerRadius=MobilePalette.rowDp*density
+                if(!category && !warning && !MobileStyle.new) setStroke(1,MobilePalette.outline)
             }
             // The installed version is set apart from the update actions by a line above it.
             if(preference?.key == "updateCurrentVersion") view.background=android.graphics.drawable.LayerDrawable(arrayOf(view.background,
@@ -131,12 +134,20 @@ object MobileSettingsStyle {
             styledBackgrounds[view] = view.background
             view.findViewById<android.widget.ImageView>(android.R.id.icon)?.apply {
                 visibility=if(preference?.icon!=null) View.VISIBLE else View.GONE
-                imageTintList=if(preference?.key == "vkRelayAccount" && preference.icon is androidx.core.graphics.drawable.RoundedBitmapDrawable) null else android.content.res.ColorStateList.valueOf(accent)
+                imageTintList=if(preference?.key == "vkRelayAccount" && preference.icon is androidx.core.graphics.drawable.RoundedBitmapDrawable) null
+                    // A solid mark would stand out among the outlined icons.
+                    else android.content.res.ColorStateList.valueOf(if(MobileStyle.new && preference?.key?.startsWith("qmobileVk")==true) androidx.core.graphics.ColorUtils.blendARGB(MobilePalette.text,MobilePalette.muted,.5f) else accent)
+                // The new style sets each icon in its own small plate.
+                if(MobileStyle.new) {
+                    layoutParams=layoutParams.apply { width=(38*density).toInt(); height=(38*density).toInt() }
+                    setPadding((8*density).toInt(),(8*density).toInt(),(8*density).toInt(),(8*density).toInt())
+                    this.background=android.graphics.drawable.GradientDrawable().apply { setColor(MobilePalette.well); cornerRadius=12*density }
+                }
             }
             view.findViewById<TextView>(android.R.id.title)?.apply {
-                setTextColor(dimmedWhenDisabled(if(category) accent else textColor))
-                textSize=16f
-                setTypeface(null,if(category) Typeface.BOLD else Typeface.NORMAL)
+                setTextColor(dimmedWhenDisabled(if(category) (if(MobileStyle.new) muted else accent) else textColor))
+                textSize=if(MobileStyle.new && category) 14f else 16f
+                setTypeface(typeface,if(category || MobileStyle.new) Typeface.BOLD else Typeface.NORMAL)
                 isSingleLine=false;maxLines=Int.MAX_VALUE;ellipsize=null
             }
             view.findViewById<TextView>(android.R.id.summary)?.apply { setTextColor(dimmedWhenDisabled(muted));textSize=13f }

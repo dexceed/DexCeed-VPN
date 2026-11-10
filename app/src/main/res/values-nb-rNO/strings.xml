@@ -457,7 +457,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Throne-lenke</string>
+    <string name="rawline_link">DexCeed VPN-lenke</string>
     <string name="edit_as_json">Rediger som JSON</string>
     <string name="raw_json_invalid">JSON-en er ikke en gyldig profil av denne typen</string>
     <string name="tri_state_default">Behold standard</string>
@@ -484,7 +484,7 @@
     <string name="settings_core">Kjerne</string>
     <string name="settings_core_sum">Logging, statistikk, Clash API, sikkerhet, NTP</string>
     <string name="settings_backup">Sikkerhetskopiering og gjenoppretting</string>
-    <string name="settings_backup_sum">.thrbackup-filer delt med Throne desktop, lokalt og WebDAV</string>
+    <string name="settings_backup_sum">.rwlbackup-filer delt med DexCeed VPN desktop, lokalt og WebDAV</string>
     <string name="setting_default">Standard</string>
     <string name="setting_default_value">Standard (%s)</string>
     <string name="cag_connection">Tilkobling</string>
@@ -659,7 +659,7 @@
     <string name="route_import_clipboard_profile">Importer ruteprofilen \"%s\" fra utklippstavlen?</string>
     <string name="route_import_clipboard_rules">Importer en ruteregelliste fra utklippstavlen?</string>
     <string name="route_import_paste_title">Importer ruteprofil</string>
-    <string name="route_import_paste_hint">Lim inn en Throne-rutelenke, en remoteRoute-lenke, en base64-blob eller en JSON-regelmatrise</string>
+    <string name="route_import_paste_hint">Lim inn en DexCeed VPN-rutelenke, en remoteRoute-lenke, en base64-blob eller en JSON-regelmatrise</string>
     <string name="route_import_invalid_title">Ugyldig inndata</string>
     <string name="route_import_invalid">Kunne ikke importere denne ruteprofilen:\n%s</string>
     <string name="route_import_warnings_title">Importert med advarsler</string>
@@ -706,7 +706,7 @@
     <string name="route_profile_default_outbound">Standard utgående</string>
     <string name="route_profile_remote_source">Ekstern kilde</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (throne://route-lenke, base64 eller JSON)</string>
+    <string name="route_profile_url_hint">https://… (rawline://route-lenke, base64 eller JSON)</string>
     <string name="route_profile_auto_update">Automatisk oppdatering</string>
     <string name="route_profile_auto_update_sum">Hent denne profilen på nytt fra URL-en når eksterne profiler oppdateres automatisk. Dine lokale redigeringer overskrives ved hver oppdatering.</string>
     <string name="route_profile_fetch">Hent nå</string>
@@ -1028,7 +1028,7 @@
     </plurals>
     <string name="profiles_copy_links">Kopier lenker</string>
     <string name="profiles_copy_share_links">Delingslenker</string>
-    <string name="profiles_copy_throne_links">Throne-lenker</string>
+    <string name="profiles_copy_rawline_links">DexCeed VPN-lenker</string>
     <plurals name="profiles_copied">
         <item quantity="one">Kopierte %d element</item>
         <item quantity="other">Kopierte %d elementer</item>
@@ -1415,14 +1415,14 @@
     <string name="backup_part_routes">Ruteprofiler</string>
     <string name="backup_part_settings">Innstillinger</string>
     <string name="backup_part_otp">OTP-profiler (gjenopprettes ikke på Android)</string>
-    <string name="backup_local_summary">Sikkerhetskopier bruker Throne desktop-formatet (.thrbackup): begge apper kan gjenopprette dem. WebDAV-opplysninger blir på denne enheten.</string>
+    <string name="backup_local_summary">Sikkerhetskopier bruker DexCeed VPN desktop-formatet (.rwlbackup): begge apper kan gjenopprette dem. WebDAV-opplysninger blir på denne enheten.</string>
     <string name="backup_create">Opprett sikkerhetskopi</string>
     <string name="backup_restore">Gjenopprett</string>
     <string name="backup_select_part">Velg minst én del å inkludere i sikkerhetskopien.</string>
     <string name="backup_creating">Oppretter sikkerhetskopi …</string>
     <string name="backup_created">Sikkerhetskopi opprettet. Inkludert: %s</string>
     <string name="backup_failed">Kunne ikke opprette sikkerhetskopien: %s</string>
-    <string name="backup_open_label">Gjenopprett Throne-sikkerhetskopi</string>
+    <string name="backup_open_label">Gjenopprett DexCeed VPN-sikkerhetskopi</string>
     <string name="backup_restore_title">Gjenopprett sikkerhetskopi</string>
     <string name="backup_restore_header">Sikkerhetskopi opprettet %1$s (%2$s).\nVelg hvilke deler som skal gjenopprettes:</string>
     <string name="backup_unknown_date">ukjent dato</string>
@@ -1438,7 +1438,7 @@
     <string name="backup_restored">Sikkerhetskopi gjenopprettet. DexCeed VPN starter nå på nytt for at endringene skal tre i kraft.</string>
     <string name="backup_restored_warnings">Sikkerhetskopi gjenopprettet. DexCeed VPN starter nå på nytt for at endringene skal tre i kraft.\n\nMerk:\n%s</string>
     <string name="backup_restore_failed">Gjenoppretting mislyktes: %s</string>
-    <string name="backup_error_not_backup">Ikke en gyldig Throne-sikkerhetskopifil.</string>
+    <string name="backup_error_not_backup">Ikke en gyldig DexCeed VPN-sikkerhetskopifil.</string>
     <string name="backup_error_version">Versjonen av sikkerhetskopiformatet støttes ikke: %d.\nDenne sikkerhetskopien kan være opprettet med en nyere versjon av appen.</string>
     <string name="backup_error_corrupt">Sikkerhetskopifilen er skadet eller ufullstendig.</string>
     <string name="backup_error_nothing">Denne sikkerhetskopifilen inneholder ingen gjenopprettbare data.</string>
@@ -1453,17 +1453,17 @@
     <string name="backup_warn_dropped_profiles">%d profiler uten noen gruppe ble hoppet over.</string>
     <string name="backup_warn_unlisted_profiles">%d profiler som manglet i gruppens liste ble lagt til på slutten.</string>
     <string name="backup_warn_orphan_rules">%d regler for manglende ruteprofiler ble hoppet over.</string>
-    <string name="backup_warn_raw_routes">%d rå ruteprofiler fra Throne desktop beholdes skrivebeskyttet; Android kan ikke bruke dem.</string>
+    <string name="backup_warn_raw_routes">%d rå ruteprofiler fra DexCeed VPN desktop beholdes skrivebeskyttet; Android kan ikke bruke dem.</string>
     <string name="backup_warn_lan_access">Sikkerhetskopien lar andre enheter koble til (inngående adresse %s); dette var slått av. Slå det på igjen i de inngående innstillingene hvis du trenger det.</string>
     <string name="webdav_choose_backup">Velg en sikkerhetskopi</string>
-    <string name="webdav_no_backups">Ingen .thrbackup-filer ble funnet i %s.</string>
+    <string name="webdav_no_backups">Ingen .rwlbackup-filer ble funnet i %s.</string>
     <string name="webdav_listing">Leser WebDAV-mappen …</string>
     <string name="webdav_uploading">Laster opp til WebDAV …</string>
     <string name="webdav_downloading">Laster ned fra WebDAV …</string>
-    <string name="route_raw_summary">Rå (Throne desktop) · skrivebeskyttet</string>
+    <string name="route_raw_summary">Rå (DexCeed VPN desktop) · skrivebeskyttet</string>
     <string name="route_raw_view">Vis</string>
-    <string name="route_raw_not_usable">Rå ruteprofiler fra Throne desktop kan ikke brukes på Android.</string>
-    <string name="route_raw_notice">Denne rå ruteprofilen ble laget på Throne desktop. Den beholdes uendret slik at sikkerhetskopier gir den tilbake til desktopen; Android kan ikke redigere eller bruke den.</string>
+    <string name="route_raw_not_usable">Rå ruteprofiler fra DexCeed VPN desktop kan ikke brukes på Android.</string>
+    <string name="route_raw_notice">Denne rå ruteprofilen ble laget på DexCeed VPN desktop. Den beholdes uendret slik at sikkerhetskopier gir den tilbake til desktopen; Android kan ikke redigere eller bruke den.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d desktop-endepunktsprofil (OpenVPN / OpenConnect) beholdes med denne ruteprofilen, men kjøres ikke på Android.</item>
         <item quantity="other">%d desktop-endepunktsprofiler (OpenVPN / OpenConnect) beholdes med denne ruteprofilen, men kjøres ikke på Android.</item>

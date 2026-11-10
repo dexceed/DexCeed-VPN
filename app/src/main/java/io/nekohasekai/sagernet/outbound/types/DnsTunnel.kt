@@ -1,8 +1,8 @@
-package app.qthrone.mobile.outbound.types
-import app.qthrone.mobile.outbound.*
-import app.qthrone.mobile.outbound.json.*
-import app.qthrone.mobile.outbound.link.*
-import app.qthrone.mobile.bg.carrier.*
+package app.rawline.mobile.outbound.types
+import app.rawline.mobile.outbound.*
+import app.rawline.mobile.outbound.json.*
+import app.rawline.mobile.outbound.link.*
+import app.rawline.mobile.bg.carrier.*
 
 /**
  * A DNS tunnel profile: DNSTT, VayDNS, Slipstream, MasterDNS, CottenDNS or Soar. The fields are those of the dnst://
@@ -33,7 +33,9 @@ class DnsTunnel(type:String="dnstt"):Outbound(type),NativeCarrier {
         val BACKENDS=listOf("socks","ssh","shadowsocks")
         val RECORD_TYPES=listOf("txt","cname","a","aaaa","mx","ns","srv","null","caa")
         private const val PREFIX="dnst://"
+        private val PUBLIC_RESOLVERS=listOf("8.8.8.8","1.1.1.1","9.9.9.9","77.88.8.8")
         private val WHITEDNS_SCHEMES=listOf("masterdns","stormdns","cottendns","soar")
+        val COTTEN_PRESETS=listOf("default","speed","survival","tcp-survival","master-storm")
         private val HEX64=Regex("[0-9a-fA-F]{64}")
 
         /** SlipNet's tunnel types that are DNS tunnels this client runs, by its export name. */
@@ -41,14 +43,32 @@ class DnsTunnel(type:String="dnstt"):Outbound(type),NativeCarrier {
             "vaydns" to ("vaydns" to "socks"),"vaydns_ssh" to ("vaydns" to "ssh"),
             "ss" to ("slipstream" to "socks"),"slipstream_ssh" to ("slipstream" to "ssh"))
 
+        private val IPV4_RESOLVER=Regex("""(\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?""")
+        private val IPV6_RESOLVER=Regex("""\[([^\]]+)](?::\d{1,5})?""")
+
+        /** The resolvers on a line of plain addresses; channels post them under the link. Empty for any other line. */
+        fun resolverList(line:String):List<String> {
+            val tokens=line.trim().split(Regex("[,\\s]+")).filter { it.isNotEmpty() }
+            val valid=tokens.isNotEmpty() && tokens.all { token ->
+                IPV4_RESOLVER.matchEntire(token)?.let { Hosts.isIpv4Address(it.groupValues[1]) }
+                    ?: Hosts.isIpv6Address(IPV6_RESOLVER.matchEntire(token)?.groupValues?.get(1) ?: token)
+            }
+            return if(valid) tokens else emptyList()
+        }
+
         /** The network's DNS servers right now, for profiles that name no resolver. */
         fun systemResolvers():List<String> = runCatching {
-            val connectivity=app.qthrone.mobile.SagerNet.connectivity
-            val network=app.qthrone.mobile.SagerNet.underlyingNetwork ?: connectivity.activeNetwork
+            val connectivity=app.rawline.mobile.SagerNet.connectivity
+            val network=app.rawline.mobile.SagerNet.underlyingNetwork ?: connectivity.activeNetwork
             connectivity.getLinkProperties(network)?.dnsServers.orEmpty().mapNotNull { address ->
                 address.hostAddress?.substringBefore('%')?.let { Hosts.displayAddress(it,53) }
             }
         }.getOrDefault(emptyList())
+    }
+
+    /** Resolvers that came beside the link; the ones the profile names itself stay. */
+    fun adoptResolvers(list:List<String>) {
+        if(list.isNotEmpty() && data.array("resolvers").isEmpty()) data["resolvers"]=JsonArray.of(*list.toTypedArray())
     }
 
     override fun parseFromJson(obj:JsonObject):Boolean {
@@ -134,8 +154,19 @@ class DnsTunnel(type:String="dnstt"):Outbound(type),NativeCarrier {
     private fun parseSlipNet(body:String):Boolean {
         val f=String(Base64Strict.decode(body.substringBefore('#').trim()) ?: Base64Strict.decode(body.trim(),true) ?: return false,Charsets.UTF_8).split('|')
         if(f.size<11) return false
-        val (kind,backendType)=SLIPNET_TYPES[f[1]] ?: return false
         fun field(i:Int)=f.getOrNull(i).orEmpty()
+        // SlipNet 2.5.6: only plain Soar; Soar over SSH has no counterpart here.
+        if(f[1]=="soar") {
+            val list=JsonArray()
+            for(item in field(4).split(',')) {
+                val parts=item.split(':');if(parts.size<2 || parts[0].isBlank()) continue
+                list.add(Hosts.displayAddress(parts[0],parts[1].toIntOrNull() ?: 53))
+            }
+            val obj=jsonObjectOf("type" to "soar","name" to field(2),"domain" to field(3),"pubkey" to field(11),"resolvers" to list)
+            obj["soar"]=jsonObjectOf("discovery" to (field(79)=="1"),"country" to field(80))
+            return parseFromJson(obj)
+        }
+        val (kind,backendType)=SLIPNET_TYPES[f[1]] ?: return false
         fun b64(i:Int)=field(i).takeIf { it.isNotEmpty() }?.let { Base64Strict.decode(it)?.toString(Charsets.UTF_8) }.orEmpty()
         val resolvers=JsonArray()
         val authoritative=field(4).split(',').any { it.split(':').getOrNull(2)=="1" }
@@ -209,9 +240,15 @@ class DnsTunnel(type:String="dnstt"):Outbound(type),NativeCarrier {
      */
     private fun cottenOptions(s:JsonObject):JsonObject {
         val o=JsonObject()
-        if(s.isEmpty()) return o
+        // The client settings WhiteDNS gives every profile: most links carry none, and the engine's own floor
+        // of a 1000-byte download MTU rejects most resolvers before the session starts.
+        o["STARTUP_MODE"]="resolvers"
+        o["MIN_UPLOAD_MTU"]=40;o["MIN_DOWNLOAD_MTU"]=300;o["MAX_UPLOAD_MTU"]=140;o["MAX_DOWNLOAD_MTU"]=3000
+        o["MTU_TEST_TIMEOUT_RESOLVERS"]=2.5;o["MTU_TEST_TIMEOUT_LOGS"]=2.5
+        o["RESOLVER_UDP_CONNECTION_POOL_SIZE"]=64;o["STREAM_QUEUE_INITIAL_CAPACITY"]=128;o["ORPHAN_QUEUE_INITIAL_CAPACITY"]=32
+        o["DNS_RESPONSE_FRAGMENT_STORE_CAPACITY"]=256;o["SOCKS_UDP_ASSOCIATE_READ_TIMEOUT_SECONDS"]=30.0
         fun choice(key:String,allowed:List<String>,fallback:String="preset")=s.string(key).trim().lowercase().takeIf { it in allowed } ?: fallback
-        val preset=choice("configPreset",listOf("default","speed","survival","tcp-survival","master-storm"),"default")
+        val preset=choice("configPreset",COTTEN_PRESETS,"default")
         val legacy=preset=="master-storm"
         val survival=preset=="survival"
         val transportMode=choice("transportMode",listOf("auto","udp","tcp","dot","doh","doh3","doq"))
@@ -375,7 +412,9 @@ class DnsTunnel(type:String="dnstt"):Outbound(type),NativeCarrier {
         it["type"]=type
         if(type=="soar") it["server_public_key"]=data.string("pubkey")
         if(type=="cottendns") { it.remove("cotten");it["options"]=cottenOptions(data.obj("cotten")).merge(data.obj("options")) }
-        it["system_resolvers"]=JsonArray.of(*systemResolvers().toTypedArray())
+        // Links of these two rarely name resolvers and one network's DNS may refuse the tunnel: the scan keeps what answers.
+        val public=if(type=="masterdns" || type=="cottendns") PUBLIC_RESOLVERS else emptyList()
+        it["system_resolvers"]=JsonArray.of(*(systemResolvers()+public).distinct().toTypedArray())
         it["socks"]="127.0.0.1:$port";it["socks_user"]=credentials.username;it["socks_pass"]=credentials.password
     }
 }

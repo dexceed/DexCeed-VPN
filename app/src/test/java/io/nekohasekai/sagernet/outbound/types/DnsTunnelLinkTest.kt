@@ -1,9 +1,10 @@
-package app.qthrone.mobile.outbound.types
+package app.rawline.mobile.outbound.types
 
-import app.qthrone.mobile.bg.carrier.CarrierBridgeCredentials
-import app.qthrone.mobile.bg.carrier.CarrierKind
-import app.qthrone.mobile.outbound.import.ProfileImport
-import app.qthrone.mobile.outbound.json.JsonObject
+import app.rawline.mobile.bg.carrier.CarrierBridgeCredentials
+import app.rawline.mobile.bg.carrier.CarrierKind
+import app.rawline.mobile.outbound.import.ProfileImport
+import app.rawline.mobile.outbound.json.*
+import app.rawline.mobile.outbound.link.*
 import org.junit.Assert.*
 import org.junit.Test
 import java.util.Base64
@@ -69,6 +70,37 @@ class DnsTunnelLinkTest {
         assertEquals("dcubic", config(slip).string("congestion_control"))
     }
 
+    @Test fun cottenLinkWithoutSettingsStillGetsTheClientSettings() {
+        val json=jsonObjectOf("schema" to "whitedns.profile","version" to 1,"profile" to jsonObjectOf("name" to "x",
+            "server" to jsonObjectOf("domain" to "t.example.com","encryption_key" to "k","encryption_method" to 5)))
+        val tunnel=DnsTunnel()
+        assertTrue(tunnel.parseFromLink("cottendns://"+Base64Strict.encode(json.toCompact(),urlSafe=true,padding=false)))
+        val config=tunnel.privateConfig(1080,0,CarrierBridgeCredentials("u","p"))
+        val options=config.obj("options")
+        assertEquals(300,options.int("MIN_DOWNLOAD_MTU"))
+        assertEquals("resolvers",options.string("STARTUP_MODE"))
+        assertTrue(options.bool("FAST_CONNECT"))
+        assertTrue("8.8.8.8" in config.array("system_resolvers").strings())
+        // The profile's own options still win over the defaults.
+        val own=DnsTunnel()
+        assertTrue(own.parseFromJson(jsonObjectOf("type" to "cottendns","domain" to "t.example.com","mkey" to "k","encryption" to 5,"options" to jsonObjectOf("MIN_DOWNLOAD_MTU" to 900))))
+        assertEquals(900,own.privateConfig(1080,0,CarrierBridgeCredentials("u","p")).obj("options").int("MIN_DOWNLOAD_MTU"))
+    }
+
+    @Test fun addressLinesBesideALinkBecomeItsResolvers() {
+        val json=jsonObjectOf("schema" to "whitedns.profile","version" to 1,"profile" to jsonObjectOf("name" to "x",
+            "server" to jsonObjectOf("domain" to "t.example.com","encryption_key" to "k","encryption_method" to 5)))
+        val link="cottendns://"+Base64Strict.encode(json.toCompact(),urlSafe=true,padding=false)
+        val list=ProfileImport.parse("$link\n\n\n46.243.233.247\n81.200.149.162:5353, [2001:db8::1]:53\n")
+        assertEquals(1,list.outbounds.size)
+        assertEquals(listOf("46.243.233.247","81.200.149.162:5353","[2001:db8::1]:53"),config(list.outbounds[0] as DnsTunnel).array("resolvers").strings())
+        // Only plain address lines count, and a profile's own resolvers stay.
+        assertTrue(DnsTunnel.resolverList("999.1.1.1").isEmpty() && DnsTunnel.resolverList("1.1.1.1 канал").isEmpty() && DnsTunnel.resolverList("").isEmpty())
+        val own=jsonObjectOf("type" to "cottendns","domain" to "t.example.com","mkey" to "k","encryption" to 5,"resolvers" to JsonArray.of("9.9.9.9"))
+        val kept=ProfileImport.parse("[${own.toCompact()}]\n1.1.1.1\n").outbounds.single() as DnsTunnel
+        assertEquals(listOf("9.9.9.9"),config(kept).array("resolvers").strings())
+    }
+
     @Test fun whiteDnsMasterDnsLink() {
         val json = """{"schema":"whitedns.profile","version":1,"profile":{"name":"Iran","server":{"domain":"v.example.com","encryption_key":"k3y","encryption_method":2}}}"""
         val profile = read("masterdns://" + Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray()))!!
@@ -93,7 +125,7 @@ class DnsTunnelLinkTest {
 
     @Test fun sharingKeepsResolversDomainsAndClientOptions() {
         val profile=DnsTunnel()
-        assertTrue(profile.parseFromJson(app.qthrone.mobile.outbound.json.JsonInput.parseObject("""{
+        assertTrue(profile.parseFromJson(app.rawline.mobile.outbound.json.JsonInput.parseObject("""{
             "type":"masterdns","domain":"a.example.com., b.example.com", "mkey":"secret", "encryption":1,
             "resolvers":["192.0.2.1:5353"],"options":{"PACKET_DUPLICATION_COUNT":3,"MTU_TEST_TIMEOUT":2.5}}
         """)))
@@ -101,7 +133,7 @@ class DnsTunnelLinkTest {
         assertEquals("a.example.com,b.example.com",shared.exportToJson().string("domain"))
         assertEquals(listOf("192.0.2.1:5353"),shared.exportToJson().array("resolvers").strings())
         assertEquals(profile.exportToJson().obj("options").toCompact(),shared.exportToJson().obj("options").toCompact())
-        assertFalse(DnsTunnel().parseFromJson(app.qthrone.mobile.outbound.json.JsonInput.parseObject(
+        assertFalse(DnsTunnel().parseFromJson(app.rawline.mobile.outbound.json.JsonInput.parseObject(
             """{"type":"masterdns","domain":"a.example.com","mkey":"secret","encryption":1,"options":[]} """)))
     }
 

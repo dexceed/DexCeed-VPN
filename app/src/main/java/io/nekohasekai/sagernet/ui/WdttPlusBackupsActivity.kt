@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.os.Bundle
 import android.view.Gravity
@@ -13,10 +13,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.DeployServer
-import app.qthrone.mobile.deploy.DeployStore
-import app.qthrone.mobile.deploy.WdttPlusAdmin
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.DeployServer
+import app.rawline.mobile.deploy.DeployStore
+import app.rawline.mobile.deploy.WdttPlusAdmin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,7 +57,7 @@ class WdttPlusBackupsActivity : ServerScreenActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(MobilePalette.background))
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen) }
         val toolbar = Toolbar(this).apply {
             setTitleTextColor(MobilePalette.text); setNavigationIcon(R.drawable.baseline_arrow_back_24); setNavigationOnClickListener { finish() }
             title = "Резервные копии и перенос"
@@ -148,9 +148,9 @@ class WdttPlusBackupsActivity : ServerScreenActivity() {
         form.addView(ui.text("Автоматические копии", 22f, bold = true))
         val enabled = android.widget.CheckBox(this).apply { text = "Включены"; setTextColor(MobilePalette.text); isChecked = policy.optBoolean("enabled") }
         form.addView(enabled)
-        val interval = ui.input("Интервал, ч (6–168)", policy.optInt("interval_hours", 24).toString(), number = true)
-        val retention = ui.input("Количество (2–90)", policy.optInt("retention_count", 14).toString(), number = true)
-        form.addView(interval); form.addView(retention); form.addView(ui.gap(12))
+        val interval = ui.field(form, "Интервал, ч (6–168)", policy.optInt("interval_hours", 24).toString(), number = true)
+        val retention = ui.field(form, "Количество (2–90)", policy.optInt("retention_count", 14).toString(), number = true)
+        form.addView(ui.gap(12))
         form.addView(ui.button("Сохранить", primary = true) {
             val hours = interval.text.toString().toIntOrNull()?.takeIf { it in 6..168 } ?: return@button Toast.makeText(this, "Интервал: от 6 до 168 ч", Toast.LENGTH_SHORT).show()
             val count = retention.text.toString().toIntOrNull()?.takeIf { it in 2..90 } ?: return@button Toast.makeText(this, "Количество: от 2 до 90", Toast.LENGTH_SHORT).show()
@@ -201,7 +201,7 @@ class WdttPlusBackupsActivity : ServerScreenActivity() {
         val compressed = ByteArrayOutputStream().use { out -> GZIPOutputStream(out).use { it.write(value.toByteArray(Charsets.UTF_8)) }; out.toByteArray() }
         val encrypted = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(128, iv)) }.doFinal(compressed)
         return JSONObject().put("format", "wdtt-plus-transfer").put("version", 1).put("kind", "server-backup")
-            .put("createdAt", System.currentTimeMillis()).put("sourceVersion", "qThroneMobile")
+            .put("createdAt", System.currentTimeMillis()).put("sourceVersion", "RawlineMobile")
             .put("kdf", "PBKDF2-HMAC-SHA256").put("iterations", 210_000)
             .put("salt", android.util.Base64.encodeToString(salt, android.util.Base64.NO_WRAP)).put("iv", android.util.Base64.encodeToString(iv, android.util.Base64.NO_WRAP))
             .put("data", android.util.Base64.encodeToString(encrypted, android.util.Base64.NO_WRAP)).toString()

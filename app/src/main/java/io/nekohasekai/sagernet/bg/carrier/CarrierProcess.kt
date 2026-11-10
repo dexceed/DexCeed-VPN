@@ -1,4 +1,4 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import java.io.File
 import java.net.InetSocketAddress
@@ -14,22 +14,26 @@ import kotlin.coroutines.coroutineContext
 enum class CarrierKind(val executable: String, val configFlag: String, val minimumApi: Int) {
     QWDTT("libqwdtt.so", "-config", 24),
     CSQTT("libqwdtt.so", "-csqtt-config", 26),
-    OPENFLUX("libopenflux.so", "--qthrone-config", 24),
-    OPENFLUXKEY("libopenfluxkey.so", "--qthrone-config", 24),
-    OLCRTC("libolcrtc.so", "--qthrone-config", 24),
-    DNSTT("libdnstun.so", "--qthrone-config", 24),
-    VAYDNS("libdnstun.so", "--qthrone-config", 24),
-    SLIPSTREAM("libdnstun.so", "--qthrone-config", 24),
-    MASTERDNS("libmasterdns.so", "--qthrone-config", 24),
-    COTTENDNS("libcottendns.so", "--qthrone-config", 24),
-    SOAR("libsoar.so", "--qthrone-config", 24),
-    S3BYPASS("libs3bypass.so", "--qthrone-config", 24),
-    SSTP("libsstp.so", "--qthrone-config", 24),
+    MRTT("libmrtt.so", "-mrtt-config", 26),
+    OPENFLUX("libopenflux.so", "--rawline-config", 24),
+    OPENFLUXKEY("libopenfluxkey.so", "--rawline-config", 24),
+    OLCRTC("libolcrtc.so", "--rawline-config", 24),
+    DNSTT("libdnstun.so", "--rawline-config", 24),
+    VAYDNS("libdnstun.so", "--rawline-config", 24),
+    SLIPSTREAM("libdnstun.so", "--rawline-config", 24),
+    MASTERDNS("libmasterdns.so", "--rawline-config", 24),
+    COTTENDNS("libcottendns.so", "--rawline-config", 24),
+    SOAR("libsoar.so", "--rawline-config", 24),
+    S3BYPASS("libs3bypass.so", "--rawline-config", 24),
+    SSTP("libsstp.so", "--rawline-config", 24),
     // WDTT Plus takes flags and its secrets as START_CONFIG on stdin, as its own app starts it.
-    WDTTPLUS("libwdttplus.so", "", 24);
+    WDTTPLUS("libwdttplus.so", "", 24),
+    FREETURN("libfreeturn.so", "--rawline-config", 24),
+    // TCP mode forwards streams to the server's backend: nothing else can reach it through this hop.
+    FREETURN_TCP("libfreeturn.so", "--rawline-config", 24);
 
     // SOCKS payload capability: TURN over TCP still carries inner UDP in qWDTT, CSQTT and WDTT Plus.
-    val tcpOnly: Boolean get() = this in listOf(OLCRTC, DNSTT, VAYDNS, SLIPSTREAM, MASTERDNS, COTTENDNS, SOAR)
+    val tcpOnly: Boolean get() = this in listOf(OLCRTC, DNSTT, VAYDNS, SLIPSTREAM, MASTERDNS, COTTENDNS, SOAR, FREETURN_TCP)
 }
 
 /** Per-launch credentials, deliberately without a generated toString() containing secrets. */
@@ -51,8 +55,8 @@ class CarrierProcess private constructor(private val process: Process, private v
     private val unavailableCall = AtomicBoolean(false)
     private class UnavailableCall:IllegalStateException("VK: выбранный хеш недоступен; звонок не найден")
     private class TransientStartup:IllegalStateException("Временная ошибка авторизации VK; повторите подключение")
-    private val captcha=CarrierCaptchaBridge(process,allowUi=allowInteractions,client=when(kind) { CarrierKind.CSQTT -> "csqtt"; CarrierKind.WDTTPLUS -> "wdttplus"; CarrierKind.OPENFLUX -> "openflux"; CarrierKind.OPENFLUXKEY -> "openfluxkey"; else -> "qwdtt" })
-    private val health=NativeTransportHealth(minimumRecoveryPeak=if(kind==CarrierKind.CSQTT) 10 else 9)
+    private val captcha=CarrierCaptchaBridge(process,allowUi=allowInteractions,client=when(kind) { CarrierKind.CSQTT,CarrierKind.MRTT -> "csqtt"; CarrierKind.WDTTPLUS -> "wdttplus"; CarrierKind.OPENFLUX -> "openflux"; CarrierKind.OPENFLUXKEY -> "openfluxkey"; CarrierKind.FREETURN,CarrierKind.FREETURN_TCP -> "freeturn"; else -> "qwdtt" })
+    private val health=NativeTransportHealth(minimumRecoveryPeak=if(kind==CarrierKind.CSQTT) 10 else if(kind==CarrierKind.MRTT) 3 else 9)
     private var wdttLifecycle: WdttPlusLifecycle? = null
     private var wdttBootstrap: WdttPlusBootstrapRelay? = null
     private var wdttDeadSince=0L
@@ -115,7 +119,7 @@ class CarrierProcess private constructor(private val process: Process, private v
             onWorkers: (Int, Int) -> Unit = { _, _ -> },
             launch: (ProcessBuilder) -> Process = { it.start() },
         ): CarrierProcess {
-            val hashes=app.qthrone.mobile.outbound.json.JsonInput.parseObject(privateJson).array("hashes").size
+            val hashes=app.rawline.mobile.outbound.json.JsonInput.parseObject(privateJson).array("hashes").size
             val attempts=if(kind==CarrierKind.QWDTT) hashes.coerceIn(1,4) else 1
             val deadline=System.nanoTime()+NativeSessionPolicy.startupTimeoutMs(kind,timeoutMs)*1_000_000
             var attempt=0
@@ -174,9 +178,10 @@ class CarrierProcess private constructor(private val process: Process, private v
                     if (kind == CarrierKind.CSQTT) {
                         check(File(nativeDirectory, "libcsqtt_transport.so").canExecute()) { "CSQTT transport client is not installed" }
                         // The profile picks the client: 2.5.0+ (legacy) or the original device-bound 2.1.9 (compat).
-                        val compatible=app.qthrone.mobile.outbound.json.JsonInput.parseObject(privateJson).string("protocol_variant")=="compat"
+                        val compatible=app.rawline.mobile.outbound.json.JsonInput.parseObject(privateJson).string("protocol_variant")=="compat"
                         check(!compatible || File(nativeDirectory,"libcsqtt_compat.so").canExecute()) { "CSQTT 2.1.9 transport is not installed" }
                     }
+                    if (kind == CarrierKind.MRTT) check(File(nativeDirectory, "libmrtt_client.so").canExecute()) { "MRTT transport client is not installed" }
                     if (kind == CarrierKind.SLIPSTREAM) {
                         check(File(nativeDirectory, "libslipstream.so").canExecute()) { "Slipstream transport client is not installed" }
                     }
@@ -194,12 +199,12 @@ class CarrierProcess private constructor(private val process: Process, private v
                             val args = launchConfig.getJSONArray("args")
                             val flags = (0 until args.length()).map { args.getString(it) }
                             val masque = if ("-rt-masque=true" in flags) {
-                                val state = File(app.qthrone.mobile.ktx.app.noBackupFilesDir,"wdttplus")
+                                val state = File(app.rawline.mobile.ktx.app.noBackupFilesDir,"wdttplus")
                                 check(state.isDirectory || state.mkdirs()) { "Cannot create private WDTT Plus state" }
                                 val masqueConfig=File(state,"rt-masque-v1.json")
                                 val bootstrap = if(WdttPlusBootstrapPolicy.needed(true,launchConfig.optBoolean("masque_server_bootstrap"),masqueConfig.exists())) {
                                     val peerIndex=flags.indexOf("-peer")
-                                    val peer=app.qthrone.mobile.outbound.link.LinkParser.parse("udp://"+flags.getOrNull(peerIndex+1).orEmpty())
+                                    val peer=app.rawline.mobile.outbound.link.LinkParser.parse("udp://"+flags.getOrNull(peerIndex+1).orEmpty())
                                     if(peerIndex >= 0 && peer.isValid) WdttPlusBootstrapRelay.start(peer.host,peer.port(56000)) else null
                                 } else null
                                 pendingBootstrap=bootstrap
@@ -218,6 +223,8 @@ class CarrierProcess private constructor(private val process: Process, private v
                             // Lifecycle events (stream count, panel restarts) for the watchdog; no addresses or hashes.
                             builder.environment()["CSQTT_DIAGNOSTICS"] = "1"
                         }
+                        // Lifecycle events (stream count, panel restarts) for the watchdog; no addresses or hashes.
+                        if (kind == CarrierKind.MRTT) builder.environment()["MRTT_DIAGNOSTICS"] = "1"
                         val child = try { launch(builder) } catch (_: Exception) {
                             throw IllegalStateException("Cannot start transport client")
                         }
@@ -230,13 +237,24 @@ class CarrierProcess private constructor(private val process: Process, private v
                                 android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
                             val line = "START_CONFIG|" + start + '\n'
                             synchronized(child) { child.outputStream.write(line.toByteArray(Charsets.UTF_8)); child.outputStream.flush() }
-                            running.wdttLifecycle = WdttPlusLifecycle(app.qthrone.mobile.ktx.app) { command ->
+                            running.wdttLifecycle = WdttPlusLifecycle(app.rawline.mobile.ktx.app) { command ->
                                 synchronized(child) { runCatching {
                                     child.outputStream.write((command+'\n').toByteArray(Charsets.UTF_8)); child.outputStream.flush()
                                 } }
                             }
                         }
-                        runCatching { onStatus(NativeConnectionStage.AUTHORIZING) }
+                        if (kind == CarrierKind.FREETURN || kind == CarrierKind.FREETURN_TCP) {
+                            val send = { command: String -> synchronized(child) { runCatching { child.outputStream.write((command+'\n').toByteArray(Charsets.UTF_8)); child.outputStream.flush() } }; Unit }
+                            // The original's "operator DNS": without own servers the network's resolvers answer what the operator lets through.
+                            val ownDns = org.json.JSONObject(privateJson).getJSONObject("core").getJSONObject("dns").getJSONArray("servers").length() > 0
+                            fun networkDns() { if (!ownDns) physicalDns(app.rawline.mobile.ktx.app).takeIf { it.isNotEmpty() }?.let { send("DNS|$it") } }
+                            networkDns()
+                            running.wdttLifecycle = WdttPlusLifecycle(app.rawline.mobile.ktx.app) { command ->
+                                if (command == "CONNECTION_NETWORK") networkDns()
+                                send(command)
+                            }
+                        }
+                        runCatching { onStatus(if (kind in listOf(CarrierKind.QWDTT, CarrierKind.CSQTT, CarrierKind.MRTT, CarrierKind.WDTTPLUS, CarrierKind.FREETURN, CarrierKind.FREETURN_TCP)) NativeConnectionStage.AUTHORIZING else NativeConnectionStage.CONNECTING) }
                         val redactor = CarrierLogRedactor(privateJson, bridgeCredentials)
                         val totalWorkers = configuredWorkers(kind, privateJson)
                         moe.matsuri.nb4a.utils.CoreLog.write("[Info] [${kind.name}] Starting native transport")
@@ -249,7 +267,7 @@ class CarrierProcess private constructor(private val process: Process, private v
                                 NativeSessionPolicy.startupFailure(line)?.let { running.startupFailure.compareAndSet(null,it) }
                                 redactor.redact(line)?.let { safe -> moe.matsuri.nb4a.utils.CoreLog.write("[Info] [${kind.name}] $safe") }
                             }
-                        } }.also { running.captcha.close() } }, "qThrone-carrier-output").apply { isDaemon = true; start() }
+                        } }.also { running.captcha.close() } }, "Rawline-carrier-output").apply { isDaemon = true; start() }
                         var deadline = System.nanoTime() + timeoutMs * 1_000_000
                         var lastWaitTick=System.nanoTime()
                         var interactionBudget=20L*60*1_000_000_000L
@@ -259,7 +277,7 @@ class CarrierProcess private constructor(private val process: Process, private v
                             check(!running.captcha.userCancelled) { "VK confirmation cancelled" }
                             running.startupFailure.get()?.let { throw IllegalStateException(it) }
                             if(running.health.wrongPassword(running.captcha.waiting)) throw IllegalStateException(WRONG_PASSWORD)
-                            if(kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT) && running.health.needsRestart(running.captcha.waiting,true)) throw TransientStartup()
+                            if(kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT,CarrierKind.MRTT) && running.health.needsRestart(running.captcha.waiting,true)) throw TransientStartup()
                             val now=System.nanoTime()
                             if(running.captcha.waiting) {
                                 val paused=(now-lastWaitTick).coerceAtMost(interactionBudget)
@@ -271,7 +289,7 @@ class CarrierProcess private constructor(private val process: Process, private v
                                 outputReader.join(200)
                                 running.startupFailure.get()?.let { throw IllegalStateException(it) }
                                 if(kind==CarrierKind.QWDTT && running.unavailableCall.get()) throw UnavailableCall()
-                                if(kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT) && running.health.transientFailure) throw TransientStartup()
+                                if(kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT,CarrierKind.MRTT) && running.health.transientFailure) throw TransientStartup()
                                 error(running.startupFailure.get() ?: "Transport client stopped before becoming ready")
                             }
                             if (socksReady(socksPort, bridgeCredentials)) {
@@ -307,10 +325,22 @@ class CarrierProcess private constructor(private val process: Process, private v
         }
 
         /** The worker count the client was started with: qWDTT/CSQTT "workers", WDTT Plus "-n"; 0 for other clients. */
+        /** The resolvers of the physical network, the VPN's own excluded. */
+        private fun physicalDns(context: android.content.Context): String {
+            val connectivity = context.getSystemService(android.net.ConnectivityManager::class.java) ?: return ""
+            val network = connectivity.allNetworks.firstOrNull {
+                val capabilities = connectivity.getNetworkCapabilities(it)
+                capabilities?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                    capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+            } ?: return ""
+            return connectivity.getLinkProperties(network)?.dnsServers.orEmpty().mapNotNull { it.hostAddress }.joinToString(",")
+        }
+
         internal fun configuredWorkers(kind: CarrierKind, privateJson: String): Int = runCatching {
             val json = org.json.JSONObject(privateJson)
             when (kind) {
-                CarrierKind.QWDTT, CarrierKind.CSQTT -> json.optInt("workers")
+                CarrierKind.QWDTT, CarrierKind.CSQTT, CarrierKind.MRTT -> json.optInt("workers")
+                CarrierKind.FREETURN, CarrierKind.FREETURN_TCP -> json.getJSONObject("core").getJSONObject("turn").optInt("n")
                 CarrierKind.WDTTPLUS -> json.getJSONArray("args").let { args ->
                     (0 until args.length() - 1).firstOrNull { args.getString(it) == "-n" }?.let { args.getString(it + 1).toInt() } ?: 0
                 }

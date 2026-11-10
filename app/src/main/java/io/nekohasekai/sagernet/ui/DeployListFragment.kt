@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -16,11 +16,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.DeployEngine
-import app.qthrone.mobile.deploy.DeployServer
-import app.qthrone.mobile.deploy.DeployStore
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.DeployEngine
+import app.rawline.mobile.deploy.DeployServer
+import app.rawline.mobile.deploy.DeployStore
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,7 +32,7 @@ class DeployListFragment : Fragment() {
     private var load: Job? = null
     private var cachedItems: List<DeployServer> = emptyList()
     private var openSwipe: MobileSwipeTile? = null
-    private val kind get() = arguments?.getString("kind").takeIf { it in listOf("qwdtt", "csqtt", "wdttplus") } ?: "qwdtt"
+    private val kind get() = arguments?.getString("kind").takeIf { it in listOf("qwdtt", "csqtt", "mrtt", "wdttplus", "freeturn") } ?: "qwdtt"
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     override fun onCreateAnimator(transit: Int, enter: Boolean, nextAnim: Int): android.animation.Animator? =
         MobileScreenMotion.create(this, nextAnim)
@@ -44,9 +44,14 @@ class DeployListFragment : Fragment() {
         }
         render(cachedItems)
         return ScrollView(requireContext()).apply {
-            setBackgroundColor(MobilePalette.background); isVerticalScrollBarEnabled = false
+            setBackgroundColor(MobilePalette.screen); isVerticalScrollBarEnabled = false
             addView(body); applyListInsets()
         }
+    }
+
+    override fun onViewCreated(view: View, state: Bundle?) {
+        super.onViewCreated(view, state)
+        if (kind == "mrtt") (parentFragment as? ToolbarFragment)?.toolbar?.let { MrttDeployJobs.attach(requireActivity(), it, viewLifecycleOwner) }
     }
 
     override fun onResume() {
@@ -68,7 +73,8 @@ class DeployListFragment : Fragment() {
     private fun render(items: List<DeployServer>) {
         body.removeAllViews(); openSwipe = null
         items.forEach { server ->
-            tile(server["name"], server["host"], R.drawable.ic_mobile_core, server) { open(server.id) }
+            val named = server["name"].isNotBlank()
+            tile(if (named) server["name"] else server["host"], if (named) server["host"] else null, R.drawable.ic_mobile_core, server) { open(server.id) }
         }
         tile("Добавить VPS для деплоя", null, R.drawable.ic_mobile_add) { open(null) }
     }
@@ -81,10 +87,11 @@ class DeployListFragment : Fragment() {
     }
 
     private fun tile(title: String, subtitle: String?, icon: Int, server: DeployServer? = null, click: () -> Unit) {
-        fun background() = GradientDrawable().apply { setColor(MobilePalette.surface); cornerRadius = dp(5).toFloat(); setStroke(1,MobilePalette.outline) }
+        fun background() = GradientDrawable().apply { setColor(MobilePalette.surface); cornerRadius=dp(MobilePalette.rowDp).toFloat(); setStroke(1,MobilePalette.outline) }
+        val glass = MobileStyle.new
         val tile = LinearLayout(requireContext()).apply {
             gravity = Gravity.CENTER_VERTICAL; setPadding(dp(12), dp(8), dp(12), dp(8))
-            minimumHeight = dp(48); this.background = background()
+            minimumHeight = dp(48); this.background = if (glass) MobilePalette.rowShape(context) else background()
             isFocusable = true; setOnClickListener { click() }; MobileFeedback.apply(this)
         }
         tile.addView(ImageView(requireContext()).apply {
@@ -93,18 +100,26 @@ class DeployListFragment : Fragment() {
         }, LinearLayout.LayoutParams(dp(26), dp(26)).apply { marginEnd = dp(12) })
         tile.addView(LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            addView(TextView(context).apply { text = title; textSize = 16f; setTypeface(null,android.graphics.Typeface.BOLD); setTextColor(MobilePalette.text) })
+            addView(TextView(context).apply { text = title; textSize = 16f; setTypeface(typeface,android.graphics.Typeface.BOLD); setTextColor(MobilePalette.text) })
             if (subtitle != null) addView(TextView(context).apply {
                 text = subtitle; textSize = 14f; setTextColor(MobilePalette.muted); setPadding(0, dp(3), 0, 0)
             })
         }, LinearLayout.LayoutParams(0, -2, 1f))
         val entry: View = if (server == null) tile else {
             val delete = ImageButton(requireContext()).apply {
-                setImageResource(R.drawable.ic_mobile_delete); imageTintList = ColorStateList.valueOf(Color.WHITE)
-                setBackgroundColor(Color.rgb(220, 66, 61)); setPadding(dp(18), dp(18), dp(18), dp(18))
+                setImageResource(R.drawable.ic_mobile_delete)
+                val red = Color.rgb(220, 66, 61)
+                if (glass) {
+                    imageTintList = ColorStateList.valueOf(red)
+                    this.background = MobilePalette.actionShape(context, red); MobileFeedback.apply(this)
+                    setPadding(dp(20), dp(12), dp(20), dp(12))
+                } else {
+                    imageTintList = ColorStateList.valueOf(Color.WHITE)
+                    setBackgroundColor(red); setPadding(dp(18), dp(18), dp(18), dp(18))
+                }
                 contentDescription = "Удалить VPS из списка"
                 setOnClickListener {
-                    if (DeployEngine.state.value.running && DeployEngine.state.value.serverId == server.id)
+                    if ((DeployEngine.state.value.running && DeployEngine.state.value.serverId == server.id) || app.rawline.mobile.deploy.MrttDeploy.running(server.id))
                         Toast.makeText(context, "Дождитесь завершения операции", Toast.LENGTH_SHORT).show()
                     else MobileAlertDialogBuilder(context).setMessage("Удалить VPS из списка? Сервис на сервере останется.")
                         .setNegativeButton(android.R.string.cancel, null)
@@ -116,7 +131,9 @@ class DeployListFragment : Fragment() {
                 }
             }
             MobileSwipeTile(requireContext(), tile, View(requireContext()), View(requireContext()), delete, deleteOnly = true).apply {
-                this.background = background(); clipToOutline = true
+                // In the new style the glass is the row's alone: a second layer here would show through it.
+                this.background = if (glass) GradientDrawable().apply { setColor(Color.TRANSPARENT); cornerRadius = dp(MobilePalette.rowDp).toFloat() } else background()
+                clipToOutline = true
                 onOpened = { opened -> openSwipe?.takeIf { it !== opened }?.closeActions(); openSwipe = opened }
             }
         }

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import android.content.Context
 import java.io.File
@@ -11,7 +11,7 @@ class CarrierHashCheck : AutoCloseable {
         internal fun stateDirectory(cache:File,deviceId:String):File {
             val digest=java.security.MessageDigest.getInstance("SHA-256").digest(deviceId.toByteArray(Charsets.UTF_8))
             val key=digest.take(16).joinToString("") { "%02x".format(it.toInt() and 255) }
-            return File(cache,"carriers/qThrone/qwdtt/$key")
+            return File(cache,"carriers/Rawline/qwdtt/$key")
         }
     }
     private val stopped = AtomicBoolean(false)
@@ -30,10 +30,10 @@ class CarrierHashCheck : AutoCloseable {
      * CSQTT's own check, as its original app runs it: `--validate-vk-hashes` asks VK for an anonymous
      * token of each call, one after another, without TURN credentials or a captcha.
      */
-    fun runCsqtt(context: Context, hashes: List<Pair<Int, String>>, onUpdate: (Int, String) -> Unit) {
+    fun runCsqtt(context: Context, hashes: List<Pair<Int, String>>, onUpdate: (Int, String) -> Unit, client: String = "libcsqtt_transport.so") {
         if (hashes.isEmpty() || stopped.get()) return
         require(hashes.all { it.second.matches(Regex("[A-Za-z0-9_-]{16,512}")) }) { "Некорректный хеш VK" }
-        val binary = File(context.applicationInfo.nativeLibraryDir, "libcsqtt_transport.so")
+        val binary = File(context.applicationInfo.nativeLibraryDir, client)
         check(binary.canExecute()) { "Бинарный клиент не найден" }
         val child = ProcessBuilder(binary.absolutePath, "--validate-vk-hashes", "--vk", hashes.joinToString(",") { it.second },
             "--fingerprint", "firefox", "--client-ids", "8202606,6287487")
@@ -48,7 +48,7 @@ class CarrierHashCheck : AutoCloseable {
         val killer = Thread({
             try { if (!child.waitFor(75, java.util.concurrent.TimeUnit.SECONDS)) child.destroyForcibly() }
             catch (_: InterruptedException) { }
-        }, "qThrone-csqtt-hash-check-timeout").apply { isDaemon = true }
+        }, "Rawline-csqtt-hash-check-timeout").apply { isDaemon = true }
         watchdog = killer
         killer.start()
         try {
@@ -104,7 +104,7 @@ class CarrierHashCheck : AutoCloseable {
                     timedOut.set(true); child.destroyForcibly(); bridge.close()
                 }
             } catch (_: InterruptedException) { }
-        }, "qThrone-wdttplus-hash-check-timeout").apply { isDaemon = true }
+        }, "Rawline-wdttplus-hash-check-timeout").apply { isDaemon = true }
         watchdog = killer
         killer.start()
         try {
@@ -156,7 +156,7 @@ class CarrierHashCheck : AutoCloseable {
                     bridge.close()
                 }
             } catch (_: InterruptedException) { }
-        }, "qThrone-hash-check-timeout").apply { isDaemon = true }
+        }, "Rawline-hash-check-timeout").apply { isDaemon = true }
         watchdog = killer
         if (stopped.get()) { close(); return }
         killer.start()

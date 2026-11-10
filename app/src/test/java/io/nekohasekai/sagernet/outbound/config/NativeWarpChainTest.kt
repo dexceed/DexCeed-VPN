@@ -1,11 +1,11 @@
-package app.qthrone.mobile.outbound.config
+package app.rawline.mobile.outbound.config
 
-import app.qthrone.mobile.outbound.Outbound
-import app.qthrone.mobile.outbound.`import`.ProfileImport
-import app.qthrone.mobile.outbound.json.JsonInput
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.json.jsonObjectOf
-import app.qthrone.mobile.outbound.types.OlcRtc
+import app.rawline.mobile.outbound.Outbound
+import app.rawline.mobile.outbound.`import`.ProfileImport
+import app.rawline.mobile.outbound.json.JsonInput
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.json.jsonObjectOf
+import app.rawline.mobile.outbound.types.OlcRtc
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -31,6 +31,19 @@ class NativeWarpChainTest {
         assertEquals(plan.credentials.username,bridge.string("username"));assertEquals(plan.credentials.password,bridge.string("password"))
         assertFalse("The native loopback listener must be reached directly",bridge.contains("detour"))
         assertEquals(before,profile.exportToJson().toCompact())
+    }
+
+    @Test fun masqueReachesUdp443ThroughVision() {
+        fun flow(mode:String):String {
+            val profile=app.rawline.mobile.outbound.types.XrayVless().apply {
+                server="192.0.2.1";serverPort=443;uuid="00000000-0000-0000-0000-000000000001";flow="xtls-rprx-vision"
+            }
+            val result=ConfigGenerator(ProfileProvider { if(it==1L) profile else null },settings.copy(warpMode=mode)).build(1)
+            assertNull(result.error)
+            return result.xrayConfig.orEmpty().let { Regex("xtls-rprx-vision[-a-z0-9]*").find(it)?.value.orEmpty() }
+        }
+        assertEquals("xtls-rprx-vision-udp443",flow("masque"))
+        assertEquals("xtls-rprx-vision",flow("wireguard"))
     }
 
     @Test fun wireGuardAndMasqueKeepTheAuthenticatedNativeEntry() {

@@ -1,13 +1,13 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.Context
 import android.text.InputType
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.Toast
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
-import app.qthrone.mobile.R
-import app.qthrone.mobile.ktx.dp2px
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
+import app.rawline.mobile.R
+import app.rawline.mobile.ktx.dp2px
 
 /**
  * "Add package name…" of the package pickers, for apps the list cannot show (hidden, not installed yet, restored from
@@ -27,7 +27,7 @@ object PackageNameInput {
             setPadding(dp2px(24), dp2px(8), dp2px(24), 0)
             addView(input)
         }
-        MaterialAlertDialogBuilder(context)
+        MobileAlertDialogBuilder(context)
             .setTitle(R.string.picker_add_package_title)
             .setView(container)
             .setPositiveButton(android.R.string.ok) { _, _ ->

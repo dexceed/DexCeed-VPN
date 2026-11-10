@@ -1,9 +1,9 @@
-package app.qthrone.mobile.outbound.config
+package app.rawline.mobile.outbound.config
 
 /**
  * Every setting the config skeleton reads (include/database/SettingsRepo.h), with the desktop default. Each field
  * names the desktop key; database.SettingsMapper fills it from the DataStore property of that key (lowerCamelCase).
- * `direct_dns_disable_ipv6` and `use_dns_object` are read from [app.qthrone.mobile.outbound.BuildContext] (they
+ * `direct_dns_disable_ipv6` and `use_dns_object` are read from [app.rawline.mobile.outbound.BuildContext] (they
  * also drive the domain strategies there), not duplicated here.
  */
 data class GeneratorSettings(
@@ -120,6 +120,7 @@ data class GeneratorSettings(
     val enableDnsRouting: Boolean = true,
     /** enable_tun_routing (SettingsRepo.h:222): the route profile's direct ip_cidr values bypass the tun. */
     val enableTunRouting: Boolean = false,
+    val blockUnownedTun: Boolean = false,
     /** block_quic (SettingsRepo.h): QUIC (UDP 443) headed for a proxy is refused so browsers fall back to TCP. */
     val blockQuic: Boolean = true,
     /** enable_stats (SettingsRepo.h:118): route.find_process and the api service. */
@@ -147,7 +148,7 @@ data class GeneratorSettings(
 
     // ---- tests (SettingsRepo.h:69-71): the auto-selector's probe URLs when its own are empty
     /** test_url (the desktop member test_latency_url). */
-    val testUrl: String = "http://cp.cloudflare.com/",
+    val testUrl: String = "https://cp.cloudflare.com/",
     /** direct_test_url: the selector's direct connectivity probe; "" omits it. */
     val directTestUrl: String = "",
 

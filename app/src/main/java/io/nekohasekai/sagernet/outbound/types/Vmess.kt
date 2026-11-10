@@ -1,21 +1,21 @@
-package app.qthrone.mobile.outbound.types
+package app.rawline.mobile.outbound.types
 
-import app.qthrone.mobile.outbound.BuildContext
-import app.qthrone.mobile.outbound.import.ClashProxy
-import app.qthrone.mobile.outbound.BuildResult
-import app.qthrone.mobile.outbound.Outbound
-import app.qthrone.mobile.outbound.QtStrings
-import app.qthrone.mobile.outbound.SecurityInfo
-import app.qthrone.mobile.outbound.SecurityLevel
-import app.qthrone.mobile.outbound.vPacketEncoding
-import app.qthrone.mobile.outbound.common.Multiplex
-import app.qthrone.mobile.outbound.common.Tls
-import app.qthrone.mobile.outbound.common.Transport
-import app.qthrone.mobile.outbound.json.JsonInput
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.link.Base64Strict
-import app.qthrone.mobile.outbound.link.LinkBuilder
-import app.qthrone.mobile.outbound.link.LinkParser
+import app.rawline.mobile.outbound.BuildContext
+import app.rawline.mobile.outbound.import.ClashProxy
+import app.rawline.mobile.outbound.BuildResult
+import app.rawline.mobile.outbound.Outbound
+import app.rawline.mobile.outbound.QtStrings
+import app.rawline.mobile.outbound.SecurityInfo
+import app.rawline.mobile.outbound.SecurityLevel
+import app.rawline.mobile.outbound.vPacketEncoding
+import app.rawline.mobile.outbound.common.Multiplex
+import app.rawline.mobile.outbound.common.Tls
+import app.rawline.mobile.outbound.common.Transport
+import app.rawline.mobile.outbound.json.JsonInput
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.link.Base64Strict
+import app.rawline.mobile.outbound.link.LinkBuilder
+import app.rawline.mobile.outbound.link.LinkParser
 
 /** vmess (include/configs/outbounds/vmess.h, src/configs/outbounds/vmess.cpp). */
 class Vmess : Outbound("vmess") {
@@ -100,8 +100,8 @@ class Vmess : Outbound("vmess") {
             }
         }
 
-        // throneExtra holds what the V2RayN schema cannot; the dummy authority only satisfies the URL parser
-        val extra = objN.string("throneExtra")
+        // rawlineExtra (throneExtra in older links) holds what the V2RayN schema cannot; the dummy authority only satisfies the URL parser
+        val extra = objN.string("rawlineExtra").ifEmpty { objN.string("throneExtra") }
         if (extra.isNotEmpty()) {
             val extraLink = LinkParser.parse("vmess://x@127.0.0.1:1?$extra")
             transport.parseFromLink(extraLink)
@@ -150,7 +150,7 @@ class Vmess : Outbound("vmess") {
         return true
     }
 
-    /** vmess.cpp:132-171: always the V2RayN form; what that schema has no room for travels in `throneExtra`. */
+    /** vmess.cpp:132-171: always the V2RayN form; what that schema has no room for travels in `rawlineExtra`. */
     override fun exportToLink(): String {
         val rawHttp = transport.type == "http" && !tls.enabled
         val network = when {
@@ -184,7 +184,7 @@ class Vmess : Outbound("vmess") {
         obj["alpn"] = tls.alpn.joinToString(",")
         obj["fp"] = tls.utls.fingerPrint
         if (tls.insecure) obj["allowInsecure"] = "1"
-        if (extra.isNotEmpty()) obj["throneExtra"] = LinkBuilder.formatQuery(extra)
+        if (extra.isNotEmpty()) obj["rawlineExtra"] = LinkBuilder.formatQuery(extra)
         return "vmess://" + Base64Strict.encode(obj.toCompact())
     }
 
@@ -200,7 +200,7 @@ class Vmess : Outbound("vmess") {
         if (authenticated_length) obj["authenticated_length"] = authenticated_length
         obj["packet_encoding"] = packet_encoding
         val tlsObj = tls.exportToJson()
-        if (tlsObj.isNotEmpty()) obj["tls"] = tlsObj
+        if (tlsObj.isNotEmpty()) obj["tls"] = transport.tlsFor(tlsObj)
         val transportObj = transport.exportToJson()
         if (transportObj.isNotEmpty()) obj["transport"] = transportObj
         val muxObj = multiplex.exportToJson()

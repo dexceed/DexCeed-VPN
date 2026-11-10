@@ -1,15 +1,16 @@
-package app.qthrone.mobile.outbound.types
+package app.rawline.mobile.outbound.types
 
-import app.qthrone.mobile.outbound.BuildContext
-import app.qthrone.mobile.outbound.import.ClashProxy
-import app.qthrone.mobile.outbound.BuildResult
-import app.qthrone.mobile.outbound.Outbound
-import app.qthrone.mobile.outbound.common.Multiplex
-import app.qthrone.mobile.outbound.common.Tls
-import app.qthrone.mobile.outbound.common.Transport
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.link.LinkBuilder
-import app.qthrone.mobile.outbound.link.LinkParser
+import app.rawline.mobile.outbound.BuildContext
+import app.rawline.mobile.outbound.import.ClashProxy
+import app.rawline.mobile.outbound.BuildResult
+import app.rawline.mobile.outbound.Outbound
+import app.rawline.mobile.outbound.common.Multiplex
+import app.rawline.mobile.outbound.common.Tls
+import app.rawline.mobile.outbound.common.Transport
+import app.rawline.mobile.outbound.common.XrayStreamSetting
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.link.LinkBuilder
+import app.rawline.mobile.outbound.link.LinkParser
 
 /** Trojan (include/configs/outbounds/trojan.h, src/configs/outbounds/trojan.cpp). */
 class Trojan : Outbound("trojan") {
@@ -24,6 +25,8 @@ class Trojan : Outbound("trojan") {
     override fun getTls(): Tls = tls
     override fun getMux(): Multiplex = multiplex
     override fun getTransport(): Transport = transport
+    override fun isXray(): Boolean = transport.runsOnXray(tls)
+    override fun getXrayStream(): XrayStreamSetting = XrayStreamSetting().also { it.parseFromLink(exportToLink()) }
 
     /** trojan.cpp:9-20: no default port, TLS is not forced on, always true for a parsable URL. */
     override fun parseFromLink(link: String): Boolean {
@@ -82,7 +85,7 @@ class Trojan : Outbound("trojan") {
         obj.merge(baseExportToJson())
         if (password.isNotEmpty()) obj["password"] = password
         val tlsObj = tls.exportToJson()
-        if (tlsObj.isNotEmpty()) obj["tls"] = tlsObj
+        if (tlsObj.isNotEmpty()) obj["tls"] = transport.tlsFor(tlsObj)
         val transportObj = transport.exportToJson()
         if (transportObj.isNotEmpty()) obj["transport"] = transportObj
         val muxObj = multiplex.exportToJson()
@@ -102,6 +105,19 @@ class Trojan : Outbound("trojan") {
         if (transportObj.isNotEmpty()) obj["transport"] = transportObj
         val muxObj = multiplex.build(ctx)
         if (muxObj.isNotEmpty()) obj["multiplex"] = muxObj
+        return BuildResult(obj)
+    }
+
+    override fun buildXray(ctx: BuildContext): BuildResult {
+        val obj = JsonObject()
+        obj["protocol"] = "trojan"
+        val settings = JsonObject()
+        settings["address"] = server
+        settings["port"] = serverPort
+        settings["password"] = password
+        obj["settings"] = settings
+        val streamObj = getXrayStream().build(ctx)
+        if (streamObj.isNotEmpty()) obj["streamSettings"] = streamObj
         return BuildResult(obj)
     }
 

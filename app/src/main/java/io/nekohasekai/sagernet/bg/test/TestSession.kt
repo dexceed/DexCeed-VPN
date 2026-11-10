@@ -1,26 +1,26 @@
-package app.qthrone.mobile.bg.test
+package app.rawline.mobile.bg.test
 
 import android.os.RemoteException
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SpeedTestSettings
-import app.qthrone.mobile.aidl.ITestSessionCallback
-import app.qthrone.mobile.bg.CoreRuntime
-import app.qthrone.mobile.bg.XrayGeoAssets
-import app.qthrone.mobile.bg.proto.SpeedTestSnapshot
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.GroupRepo
-import app.qthrone.mobile.database.ServerSortRule
-import app.qthrone.mobile.database.GroupSort
-import app.qthrone.mobile.database.GroupSortAction
-import app.qthrone.mobile.database.GroupSortMethod
-import app.qthrone.mobile.database.ProfileManager
-import app.qthrone.mobile.database.ProxyEntity
-import app.qthrone.mobile.database.SagerDatabase
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.ktx.readableMessage
-import app.qthrone.core.mobile.Mobile
-import app.qthrone.core.mobile.SpeedTestResult
+import app.rawline.mobile.R
+import app.rawline.mobile.SpeedTestSettings
+import app.rawline.mobile.aidl.ITestSessionCallback
+import app.rawline.mobile.bg.CoreRuntime
+import app.rawline.mobile.bg.XrayGeoAssets
+import app.rawline.mobile.bg.proto.SpeedTestSnapshot
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.GroupRepo
+import app.rawline.mobile.database.ServerSortRule
+import app.rawline.mobile.database.GroupSort
+import app.rawline.mobile.database.GroupSortAction
+import app.rawline.mobile.database.GroupSortMethod
+import app.rawline.mobile.database.ProfileManager
+import app.rawline.mobile.database.ProxyEntity
+import app.rawline.mobile.database.SagerDatabase
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.ktx.readableMessage
+import app.rawline.core.mobile.Mobile
+import app.rawline.core.mobile.SpeedTestResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -99,16 +99,31 @@ internal class TestSession(
         Mobile.stopTests()
     }
 
+    /** A big subscription should not wait for its last profile: the fast ones rise as they answer. */
+    private suspend fun sortWhileTesting() {
+        if (kind != TestSpec.KIND_URL || spec.sortGroupId <= 0 ||
+            GroupRepo.get(spec.sortGroupId)?.subOptions?.effectiveSortRule != ServerSortRule.PING) return
+        var sorted = 0
+        while (true) {
+            kotlinx.coroutines.delay(5000)
+            if (done.get() == sorted) continue
+            sorted = done.get()
+            runCatching { GroupSort.sortProfiles(spec.sortGroupId, GroupSortAction(GroupSortMethod.BY_LATENCY)) }
+                .onFailure { if (it is CancellationException) throw it else Logs.w("Ping sort failed: ${it.readableMessage}") }
+        }
+    }
+
     suspend fun run() {
         var completed=false
         notification.start()
         try {
             coroutineScope {
                 val refresher = launch { notification.refreshLoop() }
+                val sorter = launch { sortWhileTesting() }
                 try {
                     if (spec.testCurrent) runCurrent() else runProfiles()
                 } finally {
-                    refresher.cancel()
+                    refresher.cancel(); sorter.cancel()
                 }
             }
             completed=true

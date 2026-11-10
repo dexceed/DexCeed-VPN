@@ -559,12 +559,12 @@
     <string name="backup_error_foreign_key">جدول %s بازیابی‌شده به سطرهای مفقود اشاره دارد.</string>
     <string name="backup_error_missing_column">جدول %1$s پشتیبان ستون %2$s ندارد.</string>
     <string name="backup_error_missing_table">پشتیبان جدول %s ندارد.</string>
-    <string name="backup_error_not_backup">این یک فایل پشتیبان معتبر Throne نیست.</string>
+    <string name="backup_error_not_backup">این یک فایل پشتیبان معتبر DexCeed VPN نیست.</string>
     <string name="backup_error_nothing">این فایل پشتیبان هیچ داده قابل بازیابی‌ای ندارد.</string>
     <string name="backup_error_version">نسخه قالب پشتیبان پشتیبانی‌نشده: %d.\nاین پشتیبان ممکن است با نسخه جدیدتر برنامه ایجاد شده باشد.</string>
     <string name="backup_failed">ایجاد پشتیبان شکست خورد: %s</string>
-    <string name="backup_local_summary">پشتیبان‌ها از قالب دسکتاپ Throne استفاده می‌کنند (.thrbackup): هر دو برنامه می‌توانند آن‌ها را بازیابی کنند. اعتبارنامه‌های WebDAV روی همین دستگاه می‌مانند.</string>
-    <string name="backup_open_label">بازیابی پشتیبان Throne</string>
+    <string name="backup_local_summary">پشتیبان‌ها از قالب دسکتاپ DexCeed VPN استفاده می‌کنند (.rwlbackup): هر دو برنامه می‌توانند آن‌ها را بازیابی کنند. اعتبارنامه‌های WebDAV روی همین دستگاه می‌مانند.</string>
+    <string name="backup_open_label">بازیابی پشتیبان DexCeed VPN</string>
     <string name="backup_part_otp">پروفایل‌های OTP (در اندروید بازیابی نمی‌شوند)</string>
     <string name="backup_part_profiles">پروفایل‌ها (گروه‌ها و پراکسی‌ها)</string>
     <string name="backup_part_routes">پروفایل‌های مسیریابی</string>
@@ -590,7 +590,7 @@
     <string name="backup_warn_moved_profiles">%d پروفایل که گروهشان مفقود بود به گروه دیگری منتقل شد.</string>
     <string name="backup_warn_orphan_rules">%d قانون از پروفایل‌های مسیریابی مفقود رد شد.</string>
     <string name="backup_warn_orphan_tabs">%d موقعیت تب بدون گروه حذف شد.</string>
-    <string name="backup_warn_raw_routes">%d پروفایل مسیریابی خام از دسکتاپ Throne فقط‌خواندنی نگه داشته شد؛ اندروید نمی‌تواند از آن‌ها استفاده کند.</string>
+    <string name="backup_warn_raw_routes">%d پروفایل مسیریابی خام از دسکتاپ DexCeed VPN فقط‌خواندنی نگه داشته شد؛ اندروید نمی‌تواند از آن‌ها استفاده کند.</string>
     <string name="backup_warn_rows_skipped">%1$d سطر نامعتبر از %2$s رد شد.</string>
     <string name="backup_warn_unlisted_profiles">%d پروفایل که در فهرست گروهشان نبود در انتهای آن اضافه شد.</string>
     <string name="backup_warn_untabbed_groups">%d گروه بدون موقعیت تب در انتها اضافه شد.</string>
@@ -934,7 +934,7 @@
     <string name="profiles_appearance">ظاهر</string>
     <string name="profiles_copy_links">کپی پیوندها</string>
     <string name="profiles_copy_share_links">پیوندهای اشتراک‌گذاری</string>
-    <string name="profiles_copy_throne_links">پیوندهای Throne</string>
+    <string name="profiles_copy_rawline_links">پیوندهای DexCeed VPN</string>
     <string name="profiles_delete_failed">حذف پروفایل‌ها ممکن نشد.</string>
     <string name="profiles_empty">پروفایلی در این گروه نیست</string>
     <string name="profiles_empty_hint">از دکمه «افزودن پروفایل» در نوار ابزار برای درون‌ریزی از حافظه، فایل یا کد QR، یا ایجاد استفاده کنید. URL اشتراک کپی‌شده نیز می‌تواند به‌عنوان اشتراک اضافه شود.</string>
@@ -1023,7 +1023,7 @@
     <string name="route_import_invalid_title">ورودی نامعتبر</string>
     <string name="route_import_note">توجه:</string>
     <string name="route_import_parse_failed">پیوند تجزیه نشد:\n%s</string>
-    <string name="route_import_paste_hint">یک پیوند مسیر Throne، یک پیوند remoteRoute، یک blob base64، یا یک آرایه قانون JSON بچسبانید</string>
+    <string name="route_import_paste_hint">یک پیوند مسیر DexCeed VPN، یک پیوند remoteRoute، یک blob base64، یا یک آرایه قانون JSON بچسبانید</string>
     <string name="route_import_paste_title">درون‌ریزی پروفایل مسیریابی</string>
     <string name="route_import_prompt">این پروفایل مسیریابی اضافه شود؟\n\nنام: %s</string>
     <string name="route_import_title">درون‌ریزی پروفایل مسیریابی</string>
@@ -1067,12 +1067,12 @@
     <string name="route_profile_rules">قوانین (%d)</string>
     <string name="route_profile_title">پروفایل مسیریابی</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (پیوند throne://route، base64، یا JSON)</string>
+    <string name="route_profile_url_hint">https://… (پیوند rawline://route، base64، یا JSON)</string>
     <string name="route_profiles">پروفایل‌های مسیریابی</string>
     <string name="route_profiles_sum">ایجاد، ویرایش، درون‌ریزی و دانلود پروفایل‌های مسیریابی</string>
-    <string name="route_raw_not_usable">پروفایل‌های مسیریابی خام از دسکتاپ Throne را نمی‌توان روی اندروید استفاده کرد.</string>
-    <string name="route_raw_notice">این پروفایل مسیریابی خام روی دسکتاپ Throne ساخته شده است. بدون تغییر نگه داشته می‌شود تا پشتیبان‌ها آن را به دسکتاپ بازگردانند؛ اندروید نمی‌تواند آن را ویرایش یا استفاده کند.</string>
-    <string name="route_raw_summary">خام (دسکتاپ Throne) · فقط‌خواندنی</string>
+    <string name="route_raw_not_usable">پروفایل‌های مسیریابی خام از دسکتاپ DexCeed VPN را نمی‌توان روی اندروید استفاده کرد.</string>
+    <string name="route_raw_notice">این پروفایل مسیریابی خام روی دسکتاپ DexCeed VPN ساخته شده است. بدون تغییر نگه داشته می‌شود تا پشتیبان‌ها آن را به دسکتاپ بازگردانند؛ اندروید نمی‌تواند آن را ویرایش یا استفاده کند.</string>
+    <string name="route_raw_summary">خام (دسکتاپ DexCeed VPN) · فقط‌خواندنی</string>
     <string name="route_raw_view">مشاهده</string>
     <string name="route_refresh_repo">تازه‌سازی فهرست مخزن</string>
     <string name="route_remote_add_prompt">این پروفایل‌های مسیریابی راه دور اضافه شوند؟</string>
@@ -1184,7 +1184,7 @@
     <string name="settings_appearance">ظاهر</string>
     <string name="settings_appearance_sum">تم، زبان، فهرست پروفایل، اعلان</string>
     <string name="settings_backup">پشتیبان‌گیری و بازیابی</string>
-    <string name="settings_backup_sum">فایل‌های .thrbackup مشترک با دسکتاپ Throne، محلی و WebDAV</string>
+    <string name="settings_backup_sum">فایل‌های .rwlbackup مشترک با دسکتاپ DexCeed VPN، محلی و WebDAV</string>
     <string name="settings_core">هسته</string>
     <string name="settings_core_sum">ثبت رویداد، آمار، Clash API، امنیت، NTP</string>
     <string name="settings_dns">DNS</string>
@@ -1336,7 +1336,7 @@
     <string name="test_panel_title">%1$s · %2$s</string>
     <string name="test_panel_unnamed">پروفایل %d</string>
     <string name="test_panel_working">کار می‌کند</string>
-    <string name="throne_link">پیوند Throne</string>
+    <string name="rawline_link">پیوند DexCeed VPN</string>
     <string name="tls_fragment">قطعه‌بندی ClientHello TLS</string>
     <string name="tls_fragment_fallback_delay">تأخیر بازگشت قطعه‌بندی</string>
     <string name="tls_record_fragment">قطعه‌بندی رکورد TLS</string>
@@ -1462,7 +1462,7 @@
     <string name="webdav_choose_backup">انتخاب پشتیبان</string>
     <string name="webdav_downloading">در حال دانلود از WebDAV…</string>
     <string name="webdav_listing">در حال خواندن پوشه WebDAV…</string>
-    <string name="webdav_no_backups">هیچ فایل .thrbackup در %s یافت نشد.</string>
+    <string name="webdav_no_backups">هیچ فایل .rwlbackup در %s یافت نشد.</string>
     <string name="webdav_uploading">در حال بارگذاری به WebDAV…</string>
     <string name="widget_connected">متصل</string>
     <string name="widget_next">سرور بعدی</string>

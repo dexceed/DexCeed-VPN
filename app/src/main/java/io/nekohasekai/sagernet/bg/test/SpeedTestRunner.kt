@@ -1,20 +1,20 @@
-package app.qthrone.mobile.bg.test
+package app.rawline.mobile.bg.test
 
 import android.os.SystemClock
-import app.qthrone.mobile.SpeedTestSettings
-import app.qthrone.mobile.bg.CoreRuntime
-import app.qthrone.mobile.bg.proto.CoreConfigs
-import app.qthrone.mobile.bg.proto.SpeedTestSnapshot
-import app.qthrone.mobile.database.GroupSort
-import app.qthrone.mobile.database.ProfileManager
-import app.qthrone.mobile.database.ProxyEntity
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.readableMessage
-import app.qthrone.core.mobile.Instance
-import app.qthrone.core.mobile.Mobile
-import app.qthrone.core.mobile.SpeedTestHandler
-import app.qthrone.core.mobile.SpeedTestResult
-import app.qthrone.core.mobile.TestRequest
+import app.rawline.mobile.SpeedTestSettings
+import app.rawline.mobile.bg.CoreRuntime
+import app.rawline.mobile.bg.proto.CoreConfigs
+import app.rawline.mobile.bg.proto.SpeedTestSnapshot
+import app.rawline.mobile.database.GroupSort
+import app.rawline.mobile.database.ProfileManager
+import app.rawline.mobile.database.ProxyEntity
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.readableMessage
+import app.rawline.core.mobile.Instance
+import app.rawline.core.mobile.Mobile
+import app.rawline.core.mobile.SpeedTestHandler
+import app.rawline.core.mobile.SpeedTestResult
+import app.rawline.core.mobile.TestRequest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
@@ -36,7 +36,7 @@ internal class SpeedTestRunner(private val session: TestSession) {
 
     suspend fun run(profiles: List<ProxyEntity>) {
         val slices=if(countryOnly) {
-            val (native,regular)=profiles.partition { it.type in listOf("qwdtt","csqtt","wdttplus") }
+            val (native,regular)=profiles.partition { it.type in listOf("qwdtt","csqtt","mrtt","wdttplus","freeturn") }
             regular.chunked(TEST_BATCH_SIZE)+native.map { listOf(it) }
         } else profiles.chunked(1)
         for (slice in slices) {
@@ -59,7 +59,7 @@ internal class SpeedTestRunner(private val session: TestSession) {
             for (probe in TestProbe.plan(generated)) {
                 try {
                     withPreparedTransports(probe.carrierPlans,{ plan ->
-                        app.qthrone.mobile.bg.carrier.CarrierPool.acquire(plan,session.interactive,latencyProbe=false)
+                        app.rawline.mobile.bg.carrier.CarrierPool.acquire(plan,session.interactive,latencyProbe=false)
                     }) { runProbe(probe.request(), probe.profileIds, probe::profileOf, names, null) }
                 } catch(error:CancellationException) { throw error }
                 catch(error:Exception) {

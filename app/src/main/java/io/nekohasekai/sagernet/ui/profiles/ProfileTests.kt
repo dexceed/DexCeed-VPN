@@ -1,11 +1,11 @@
-package app.qthrone.mobile.ui.profiles
+package app.rawline.mobile.ui.profiles
 
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
-import app.qthrone.mobile.R
-import app.qthrone.mobile.bg.test.TestSpec
-import app.qthrone.mobile.ktx.snackbar
-import app.qthrone.mobile.ui.ConfigurationFragment
-import app.qthrone.mobile.ui.test.TestSessionClient
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
+import app.rawline.mobile.R
+import app.rawline.mobile.bg.test.TestSpec
+import app.rawline.mobile.ktx.snackbar
+import app.rawline.mobile.ui.ConfigurationFragment
+import app.rawline.mobile.ui.test.TestSessionClient
 
 /** The test entry points of the profiles screen (desktop TestRunner scopes: group, selection, one profile, current). */
 internal object ProfileTests {
@@ -29,7 +29,7 @@ internal object ProfileTests {
     /** Speed tests of more than one profile ask first: they move a lot of data. */
     private fun confirmSpeed(host: ConfigurationFragment, kind: Int, many: Boolean, start: () -> Boolean) {
         if (kind != TestSpec.KIND_SPEED || !many) return report(host, start())
-        MaterialAlertDialogBuilder(host.requireContext())
+        MobileAlertDialogBuilder(host.requireContext())
             .setTitle(R.string.speed_test_confirm_title)
             .setMessage(R.string.speed_test_confirm_message)
             .setPositiveButton(R.string.profiles_test_start) { _, _ -> report(host, start()) }

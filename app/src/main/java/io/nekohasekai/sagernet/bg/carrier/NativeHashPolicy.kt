@@ -1,13 +1,14 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
-import app.qthrone.mobile.outbound.types.Qwdtt
-import app.qthrone.mobile.outbound.types.WdttPlus
-import app.qthrone.mobile.outbound.types.Csqtt
-import app.qthrone.mobile.outbound.OutboundFactory
+import app.rawline.mobile.outbound.types.Qwdtt
+import app.rawline.mobile.outbound.types.WdttPlus
+import app.rawline.mobile.outbound.types.Csqtt
+import app.rawline.mobile.outbound.types.Mrtt
+import app.rawline.mobile.outbound.OutboundFactory
 
 object NativeHashPolicy {
     /** All three clients can share the qWDTT account binding. CSQTT also accepts a link's own token. */
-    fun supportsAutomatic(profile: Qwdtt) = profile.type in listOf("qwdtt", "csqtt", "wdttplus")
+    fun supportsAutomatic(profile: Qwdtt) = profile.type in listOf("qwdtt", "csqtt", "mrtt", "wdttplus")
 
     fun applyDefaultSource(profile: Qwdtt, source: String?) {
         if (!supportsAutomatic(profile) || profile.hashSourceChosen) return
@@ -19,8 +20,22 @@ object NativeHashPolicy {
     fun runtimeProfile(profile: Qwdtt, obtainHashes: (Int) -> List<String>): Qwdtt =
         runtimeProfile(profile, obtainHashes) { VkRelayAccount.tokenForCalls() }
 
-    internal fun runtimeProfile(profile: Qwdtt, obtainHashes: (Int) -> List<String>, obtainToken: () -> String): Qwdtt {
+    internal fun runtimeProfile(profile: Qwdtt, obtainHashes: (Int) -> List<String>, obtainToken: () -> String): Qwdtt =
+        runtimeProfile(profile, emptyList(), obtainHashes, obtainToken)
+
+    /** [picked]: the created hashes chosen for this server; none chosen takes the first ones and creates what is missing. */
+    internal fun runtimeProfile(profile: Qwdtt, picked: List<String>, obtainHashes: (Int) -> List<String>, obtainToken: () -> String): Qwdtt {
         if (!supportsAutomatic(profile)) return profile
+        // MAX and Jitsi have no VK hashes; MRTT's Auto JS is its own launch-only token, as in CSQTT.
+        if(profile is Mrtt && profile.transport!="vk") return profile
+        if(profile is Mrtt && profile.hashSource=="auto_js") {
+            if(profile.vkAccessToken.isNotBlank()) return profile
+            val copy=Mrtt()
+            check(copy.parseFromJson(profile.exportToJson()))
+            copy.vkAccessToken=obtainToken()
+            check(copy.vkAccessToken.isNotBlank() && copy.vkAccessToken.length<=4096 && copy.vkAccessToken.none { it.isWhitespace() }) { "Не удалось получить токен привязанного аккаунта VK" }
+            return copy
+        }
         if(profile is Csqtt && profile.hashSource=="auto_js") {
             if(profile.vkAccessToken.isNotBlank()) return profile
             val copy=Csqtt()
@@ -34,14 +49,16 @@ object NativeHashPolicy {
         if (profile.hashSource != "auto") return profile
         val copy = OutboundFactory.newByType(profile.type) as Qwdtt
         check(copy.parseFromJson(profile.exportToJson()))
-        val count = (if(profile is Csqtt) (copy.workers+9)/10 else (copy.workers+26)/27)
-            .coerceIn(1, if (profile.type == "csqtt") 6 else 4)
-        val hashes = obtainHashes(count)
-        check(hashes.size == count && hashes.distinct().size == count && hashes.all {
+        val slots = if (profile.type == "csqtt" || profile.type == "mrtt") 6 else 4
+        val count = (if(profile is Csqtt) (copy.workers+9)/10 else (copy.workers+26)/27).coerceIn(1, slots)
+        val hashes = picked.take(slots).ifEmpty { obtainHashes(count) }
+        check((picked.isNotEmpty() || hashes.size == count) && hashes.isNotEmpty() && hashes.distinct().size == hashes.size && hashes.all {
             it.matches(Regex("[A-Za-z0-9_-]{16,512}"))
         }) { "VK не вернул необходимые хеши звонков" }
         copy.hashes = hashes.toList()
         copy.hashSource = "manual"
+        // Fewer chosen hashes than the workers were set for carry only what each hash can take.
+        if (picked.isNotEmpty() && copy !is WdttPlus) copy.workers = copy.workers.coerceAtMost(hashes.size * if (copy is Csqtt) 10 else 27)
         return copy
     }
 
@@ -50,7 +67,7 @@ object NativeHashPolicy {
         it.remove("workers")
     }.toCompact()
     fun defaultDeviceId(hwid: String): String = java.util.UUID.nameUUIDFromBytes(
-        ("qThrone-native:"+hwid).toByteArray(Charsets.UTF_8)).toString()
+        ("Rawline-native:"+hwid).toByteArray(Charsets.UTF_8)).toString()
     fun preserve(incoming: Qwdtt, previous: List<Qwdtt>) {
         val sameType = previous.filter { it.type == incoming.type }
         val named = if(incoming.name.isNotBlank()) sameType.filter { it.name == incoming.name } else emptyList()
@@ -65,7 +82,7 @@ object NativeHashPolicy {
             // Slots the user edited stay as they are; otherwise the subscription owns its leading slots
             // and local trailing slots survive until replaced.
             if (it.hashSource == "manual") incoming.hashes = if (it.manualHashesOverride) it.hashes
-                else mergeSlots(incoming.hashes,it.hashes,if(incoming.type=="csqtt") 6 else 4)
+                else mergeSlots(incoming.hashes,it.hashes,if(incoming.type=="csqtt" || incoming.type=="mrtt") 6 else 4)
             // Everything below is the user's choice, kept like hashes and workers.
             incoming.mode=it.mode
             incoming.turnTcp=it.turnTcp
@@ -80,6 +97,12 @@ object NativeHashPolicy {
                 // An updated token in the subscription wins; a locally entered one survives an absent one.
                 if(incoming.vkAccessToken.isBlank()) incoming.vkAccessToken=it.vkAccessToken
             }
+            if(incoming is Mrtt && it is Mrtt) {
+                incoming.turnTransport=it.turnTransport;incoming.srtpMode=it.srtpMode;incoming.vkAnonPath=it.vkAnonPath
+                incoming.fingerprint=it.fingerprint;incoming.clientIds=it.clientIds;incoming.customTurnIps=it.customTurnIps
+                incoming.mtu=it.mtu;incoming.jitsiWorkers=it.jitsiWorkers;incoming.transport=it.transport;incoming.maxGroup=it.maxGroup
+                if(incoming.vkAccessToken.isBlank()) incoming.vkAccessToken=it.vkAccessToken
+            }
             if(incoming is WdttPlus && it is WdttPlus) {
                 incoming.tcpOnly=it.tcpOnly;incoming.turnSni=it.turnSni;incoming.rtMasque=it.rtMasque
                 incoming.rtMasqueServerBootstrap=it.rtMasqueServerBootstrap;incoming.fingerprint=it.fingerprint
@@ -88,6 +111,7 @@ object NativeHashPolicy {
             }
             incoming.workers=when(incoming) {
                 is Csqtt -> Csqtt.normalizeWorkers(it.workers)
+                is Mrtt -> Mrtt.normalizeWorkers(it.workers,incoming.hashes.size,incoming.hashSource!="manual" || incoming.transport=="max")
                 is WdttPlus -> WdttPlus.normalizeWorkers(it.workers,incoming.maxWorkers)
                 else -> preservedWorkers(it.workers,workerLimit(incoming))
             }
@@ -95,6 +119,7 @@ object NativeHashPolicy {
     }
     fun workerLimit(profile:Qwdtt):Int {
         if(profile is Csqtt) return 100
+        if(profile is Mrtt) return Mrtt.maxWorkers(profile.hashes.size,profile.hashSource!="manual" || profile.transport=="max")
         val slots=4
         val hashes=if(profile.hashSource=="auto") slots else profile.hashes.size.coerceIn(1,slots)
         // WDTT Plus groups 9 workers each up to 108 whatever the hash count.

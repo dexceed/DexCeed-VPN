@@ -453,7 +453,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Throne-link</string>
+    <string name="rawline_link">DexCeed VPN-link</string>
     <string name="edit_as_json">Bewerken als JSON</string>
     <string name="raw_json_invalid">De JSON is geen geldig profiel van dit type</string>
     <string name="tri_state_default">Standaard behouden</string>
@@ -480,7 +480,7 @@
     <string name="settings_core">Core</string>
     <string name="settings_core_sum">Loggen, statistieken, Clash API, beveiliging, NTP</string>
     <string name="settings_backup">Back-up en herstel</string>
-    <string name="settings_backup_sum">.thrbackup-bestanden gedeeld met Throne desktop, lokaal en WebDAV</string>
+    <string name="settings_backup_sum">.rwlbackup-bestanden gedeeld met DexCeed VPN desktop, lokaal en WebDAV</string>
     <string name="setting_default">Standaard</string>
     <string name="setting_default_value">Standaard (%s)</string>
     <string name="cag_connection">Verbinding</string>
@@ -655,7 +655,7 @@
     <string name="route_import_clipboard_profile">Routeringsprofiel \"%s\" vanaf het klembord importeren?</string>
     <string name="route_import_clipboard_rules">Een routeringsregellijst vanaf het klembord importeren?</string>
     <string name="route_import_paste_title">Routeringsprofiel importeren</string>
-    <string name="route_import_paste_hint">Plak een Throne-route-link, een remoteRoute-link, een base64-blob of een JSON-regelarray</string>
+    <string name="route_import_paste_hint">Plak een DexCeed VPN-route-link, een remoteRoute-link, een base64-blob of een JSON-regelarray</string>
     <string name="route_import_invalid_title">Ongeldige invoer</string>
     <string name="route_import_invalid">Dit routeringsprofiel kon niet worden geïmporteerd:\n%s</string>
     <string name="route_import_warnings_title">Geïmporteerd met waarschuwingen</string>
@@ -702,7 +702,7 @@
     <string name="route_profile_default_outbound">Standaard outbound</string>
     <string name="route_profile_remote_source">Externe bron</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (throne://route-link, base64 of JSON)</string>
+    <string name="route_profile_url_hint">https://… (rawline://route-link, base64 of JSON)</string>
     <string name="route_profile_auto_update">Automatisch bijwerken</string>
     <string name="route_profile_auto_update_sum">Dit profiel opnieuw van de URL ophalen wanneer externe profielen automatisch bijwerken. Uw lokale wijzigingen worden bij elke update overschreven.</string>
     <string name="route_profile_fetch">Nu ophalen</string>
@@ -1024,7 +1024,7 @@
     </plurals>
     <string name="profiles_copy_links">Links kopiëren</string>
     <string name="profiles_copy_share_links">Deellinks</string>
-    <string name="profiles_copy_throne_links">Throne-links</string>
+    <string name="profiles_copy_rawline_links">DexCeed VPN-links</string>
     <plurals name="profiles_copied">
         <item quantity="one">%d item gekopieerd</item>
         <item quantity="other">%d items gekopieerd</item>
@@ -1411,14 +1411,14 @@
     <string name="backup_part_routes">Routeringsprofielen</string>
     <string name="backup_part_settings">Instellingen</string>
     <string name="backup_part_otp">OTP-profielen (niet hersteld op Android)</string>
-    <string name="backup_local_summary">Back-ups gebruiken het Throne-desktopformaat (.thrbackup): beide apps kunnen ze herstellen. WebDAV-inloggegevens blijven op dit apparaat.</string>
+    <string name="backup_local_summary">Back-ups gebruiken het DexCeed VPN-desktopformaat (.rwlbackup): beide apps kunnen ze herstellen. WebDAV-inloggegevens blijven op dit apparaat.</string>
     <string name="backup_create">Back-up maken</string>
     <string name="backup_restore">Herstellen</string>
     <string name="backup_select_part">Selecteer minstens één onderdeel om in de back-up op te nemen.</string>
     <string name="backup_creating">Back-up maken…</string>
     <string name="backup_created">Back-up gemaakt. Inbegrepen: %s</string>
     <string name="backup_failed">Back-up maken mislukt: %s</string>
-    <string name="backup_open_label">Throne-back-up herstellen</string>
+    <string name="backup_open_label">DexCeed VPN-back-up herstellen</string>
     <string name="backup_restore_title">Back-up herstellen</string>
     <string name="backup_restore_header">Back-up gemaakt op %1$s (%2$s).\nSelecteer welke onderdelen te herstellen:</string>
     <string name="backup_unknown_date">onbekende datum</string>
@@ -1434,7 +1434,7 @@
     <string name="backup_restored">Back-up succesvol hersteld. DexCeed VPN wordt nu opnieuw gestart zodat de wijzigingen effect hebben.</string>
     <string name="backup_restored_warnings">Back-up hersteld. DexCeed VPN wordt nu opnieuw gestart zodat de wijzigingen effect hebben.\n\nOpmerkingen:\n%s</string>
     <string name="backup_restore_failed">Herstellen mislukt: %s</string>
-    <string name="backup_error_not_backup">Geen geldig Throne-back-upbestand.</string>
+    <string name="backup_error_not_backup">Geen geldig DexCeed VPN-back-upbestand.</string>
     <string name="backup_error_version">Niet-ondersteunde back-upformaatversie: %d.\nDeze back-up is mogelijk gemaakt met een nieuwere versie van de applicatie.</string>
     <string name="backup_error_corrupt">Het back-upbestand is beschadigd of onvolledig.</string>
     <string name="backup_error_nothing">Dit back-upbestand bevat geen herstelbare gegevens.</string>
@@ -1449,17 +1449,17 @@
     <string name="backup_warn_dropped_profiles">%d profielen zonder groep zijn overgeslagen.</string>
     <string name="backup_warn_unlisted_profiles">%d profielen die in de lijst van hun groep ontbraken zijn aan het einde toegevoegd.</string>
     <string name="backup_warn_orphan_rules">%d regels van ontbrekende routeringsprofielen zijn overgeslagen.</string>
-    <string name="backup_warn_raw_routes">%d ruwe routeringsprofielen van Throne desktop blijven alleen-lezen; Android kan ze niet gebruiken.</string>
+    <string name="backup_warn_raw_routes">%d ruwe routeringsprofielen van DexCeed VPN desktop blijven alleen-lezen; Android kan ze niet gebruiken.</string>
     <string name="backup_warn_lan_access">De back-up laat andere apparaten verbinden (inbound-adres %s); dit is uitgeschakeld. Zet het weer aan in de inbound-instellingen als u het nodig heeft.</string>
     <string name="webdav_choose_backup">Back-up kiezen</string>
-    <string name="webdav_no_backups">Geen .thrbackup-bestanden gevonden in %s.</string>
+    <string name="webdav_no_backups">Geen .rwlbackup-bestanden gevonden in %s.</string>
     <string name="webdav_listing">WebDAV-map lezen…</string>
     <string name="webdav_uploading">Uploaden naar WebDAV…</string>
     <string name="webdav_downloading">Downloaden vanaf WebDAV…</string>
-    <string name="route_raw_summary">Ruwe (Throne desktop) · alleen-lezen</string>
+    <string name="route_raw_summary">Ruwe (DexCeed VPN desktop) · alleen-lezen</string>
     <string name="route_raw_view">Bekijken</string>
-    <string name="route_raw_not_usable">Ruwe routeringsprofielen van Throne desktop kunnen niet op Android worden gebruikt.</string>
-    <string name="route_raw_notice">Dit ruwe routeringsprofiel is gemaakt op Throne desktop. Het blijft ongewijzigd zodat back-ups het aan de desktop teruggeven; Android kan het niet bewerken of gebruiken.</string>
+    <string name="route_raw_not_usable">Ruwe routeringsprofielen van DexCeed VPN desktop kunnen niet op Android worden gebruikt.</string>
+    <string name="route_raw_notice">Dit ruwe routeringsprofiel is gemaakt op DexCeed VPN desktop. Het blijft ongewijzigd zodat back-ups het aan de desktop teruggeven; Android kan het niet bewerken of gebruiken.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d desktop-endpointprofiel (OpenVPN / OpenConnect) blijft bij dit routeringsprofiel behouden maar draait niet op Android.</item>
         <item quantity="other">%d desktop-endpointprofielen (OpenVPN / OpenConnect) blijven bij dit routeringsprofiel behouden maar draaien niet op Android.</item>

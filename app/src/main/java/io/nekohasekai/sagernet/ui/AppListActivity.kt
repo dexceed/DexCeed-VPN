@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.Context
 import android.content.Intent
@@ -21,15 +21,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
-import app.qthrone.mobile.BuildConfig
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.databinding.LayoutAppListBinding
-import app.qthrone.mobile.databinding.LayoutAppsItemBinding
-import app.qthrone.mobile.ktx.crossFadeFrom
-import app.qthrone.mobile.route.RouteRule
-import app.qthrone.mobile.utils.PackageCache
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.BuildConfig
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.databinding.LayoutAppListBinding
+import app.rawline.mobile.databinding.LayoutAppsItemBinding
+import app.rawline.mobile.ktx.crossFadeFrom
+import app.rawline.mobile.route.RouteRule
+import app.rawline.mobile.utils.PackageCache
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
@@ -78,10 +78,11 @@ class AppListActivity : ThemedActivity() {
         init {
             binding.root.setOnClickListener(this)
             binding.root.setCardBackgroundColor(MobilePalette.surface)
-            binding.root.strokeWidth = 0
-            binding.root.radius = 20 * resources.displayMetrics.density
+            binding.root.strokeWidth = 1
+            binding.root.strokeColor = MobilePalette.outline
+            binding.root.radius = MobilePalette.rowDp * resources.displayMetrics.density
             binding.title.setTextColor(MobilePalette.text)
-            binding.title.setTypeface(null, android.graphics.Typeface.BOLD)
+            binding.title.setTypeface(binding.title.typeface,android.graphics.Typeface.BOLD)
             binding.title.textSize = 16f
             binding.desc.setTextColor(MobilePalette.muted)
         }
@@ -219,12 +220,13 @@ class AppListActivity : ThemedActivity() {
 
         binding = LayoutAppListBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.root.setBackgroundColor(MobilePalette.background)
+        binding.root.setBackgroundColor(MobilePalette.screen)
         binding.toolbar.setBackgroundColor(MobilePalette.toolbar)
         binding.toolbar.setTitleTextColor(MobilePalette.text)
         binding.searchCard.setCardBackgroundColor(MobilePalette.surface)
-        binding.searchCard.strokeWidth = 0
-        binding.searchCard.radius = 20 * resources.displayMetrics.density
+        binding.searchCard.strokeWidth = 1
+        binding.searchCard.strokeColor = MobilePalette.outline
+        binding.searchCard.radius = MobilePalette.cardDp * resources.displayMetrics.density
 
         binding.appPlaceholder.openSettings.setOnClickListener {
             try {

@@ -1,16 +1,16 @@
-package app.qthrone.mobile.outbound.types
+package app.rawline.mobile.outbound.types
 
-import app.qthrone.mobile.outbound.BuildContext
-import app.qthrone.mobile.outbound.import.ClashProxy
-import app.qthrone.mobile.outbound.BuildResult
-import app.qthrone.mobile.outbound.Outbound
-import app.qthrone.mobile.outbound.SecurityInfo
-import app.qthrone.mobile.outbound.SecurityLevel
-import app.qthrone.mobile.outbound.common.XrayMultiplex
-import app.qthrone.mobile.outbound.common.XrayStreamSetting
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.link.LinkBuilder
-import app.qthrone.mobile.outbound.link.LinkParser
+import app.rawline.mobile.outbound.BuildContext
+import app.rawline.mobile.outbound.import.ClashProxy
+import app.rawline.mobile.outbound.BuildResult
+import app.rawline.mobile.outbound.Outbound
+import app.rawline.mobile.outbound.SecurityInfo
+import app.rawline.mobile.outbound.SecurityLevel
+import app.rawline.mobile.outbound.common.XrayMultiplex
+import app.rawline.mobile.outbound.common.XrayStreamSetting
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.link.LinkBuilder
+import app.rawline.mobile.outbound.link.LinkParser
 
 /**
  * xrayVless (include/configs/outbounds/xrayVless.h, src/configs/outbounds/xrayVless.cpp): the Xray-core VLESS
@@ -123,7 +123,7 @@ class XrayVless : Outbound("xrayvless") {
     override fun buildXray(ctx: BuildContext): BuildResult {
         val obj = JsonObject()
         obj["protocol"] = "vless"
-        obj["settings"] = settingsJson()
+        obj["settings"] = settingsJson(ctx)
         val streamObj = streamSetting.build(ctx)
         if (streamObj.isNotEmpty()) obj["streamSettings"] = streamObj
         val muxObj = multiplex.build(ctx)
@@ -132,13 +132,13 @@ class XrayVless : Outbound("xrayvless") {
     }
 
     /** xrayVless.cpp:74-79 / 96-101: address, port, id and encryption always; flow unless empty or "none". */
-    private fun settingsJson(): JsonObject {
+    private fun settingsJson(ctx: BuildContext? = null): JsonObject {
         val settings = JsonObject()
         settings["address"] = server
         settings["port"] = serverPort
         settings["id"] = uuid
         settings["encryption"] = encryption
-        if (flow.isNotEmpty() && flow != "none") settings["flow"] = flow
+        if (flow.isNotEmpty() && flow != "none") settings["flow"] = if (ctx?.visionUdp443 == true && flow == "xtls-rprx-vision") "$flow-udp443" else flow
         return settings
     }
 

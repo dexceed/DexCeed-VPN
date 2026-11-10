@@ -87,7 +87,9 @@ jobs:
           build-number: ${{ steps.version.outputs.build }}
           sign: 'true'
       - name: Verify release SSH classes
-        run: python3 buildScript/check_release_ssh.py app/build/outputs/apk/oss/release
+        run: |
+          python3 buildScript/check_release_ssh.py app/build/outputs/apk/oss/release
+          python3 buildScript/check_release_core.py app/build/outputs/apk/oss/release
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v7

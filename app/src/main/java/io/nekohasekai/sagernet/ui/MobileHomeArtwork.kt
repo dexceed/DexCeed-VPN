@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -7,6 +7,19 @@ import android.graphics.drawable.Drawable
 class MobileHomeBackdrop : Drawable() {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun draw(canvas: Canvas) {
+        if(MobileStyle.new) {
+            // Soft light for the glass to lie on: true black or white stays the base.
+            canvas.drawColor(MobilePalette.background)
+            if(!MobilePalette.light) return
+            val w=bounds.width().toFloat(); val h=bounds.height().toFloat()
+            val light=Color.argb(26,70,70,90)
+            for((x,y,r) in listOf(Triple(.92f,.1f,.85f),Triple(.02f,.48f,.8f),Triple(.8f,.95f,.9f))) {
+                paint.shader=RadialGradient(w*x,h*y,w*r,light,Color.TRANSPARENT,Shader.TileMode.CLAMP)
+                canvas.drawRect(bounds,paint)
+            }
+            paint.shader=null
+            return
+        }
         if(MobilePalette.oled) { canvas.drawColor(Color.BLACK);return }
         val w = bounds.width().toFloat(); val h = bounds.height().toFloat()
         paint.shader = LinearGradient(0f, 0f, w, h,
@@ -29,9 +42,9 @@ class MobileHomeBackdrop : Drawable() {
 }
 
 /** Rings and a crisp power glyph; the surrounding view remains transparent. */
-class MobilePowerArtwork(private val accent: Int) : Drawable() {
+open class MobilePowerArtwork(private val accent: Int) : Drawable() {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var connected = false
+    open var connected = false
         set(value) { field=value; invalidateSelf() }
     var statusText = ""
         set(value) { if(field!=value) { field=value;invalidateSelf() } }
@@ -42,11 +55,12 @@ class MobilePowerArtwork(private val accent: Int) : Drawable() {
     var pressScale = 1f
         set(value) { field=value; invalidateSelf() }
     var captionSize = 0f
+    open var connecting = false
     override fun draw(canvas: Canvas) {
         val cx=bounds.exactCenterX(); val cy=bounds.exactCenterY()
         val r=minOf(bounds.width(),bounds.height())*.46f*pressScale
-        paint.style=Paint.Style.STROKE; paint.strokeWidth=r*.005f
-        paint.shader=LinearGradient(cx-r,cy-r,cx+r,cy+r,Color.argb(100,74,135,159),Color.argb(60,161,144,155),Shader.TileMode.CLAMP)
+        paint.style=Paint.Style.STROKE; paint.strokeWidth=r*.008f
+        paint.shader=LinearGradient(cx-r,cy-r,cx+r,cy+r,androidx.core.graphics.ColorUtils.setAlphaComponent(accent,170),androidx.core.graphics.ColorUtils.setAlphaComponent(accent,80),Shader.TileMode.CLAMP)
         canvas.drawCircle(cx,cy,r,paint)
         paint.style=Paint.Style.FILL
         paint.shader=LinearGradient(cx,cy-r,cx,cy+r,MobilePalette.surface,MobilePalette.toolbar,Shader.TileMode.CLAMP)

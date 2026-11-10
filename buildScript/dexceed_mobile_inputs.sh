@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepare the pinned native binaries and their Java API for the branded 1.0.x builds.
+# Prepare the pinned native binaries and their Java API for the branded 1.1.x builds.
 # Run from a clean disposable checkout with Go 1.27.0, JDK 17 and the Android SDK.
 set -euo pipefail
 root=$(pwd)
@@ -9,14 +9,14 @@ work=${1:?Specify a new scratch directory}
 mkdir "$work"
 work=$(cd "$work" && pwd)
 test -f core-dependencies.json
-test ! -e app/libs/qThroneCore.aar
-test ! -e app/libs/qThroneCore.jar
-version=v3.3.0
-sha=c66d83b271a953a26ac1ea398da1ba24a5b4aea317934e936b652fc7256624f3
+test ! -e app/libs/RawlineCore.aar
+test ! -e app/libs/RawlineCore.jar
+version=rawline-1.1.1
+sha=f9ed39c3a20640873b958d838fea625c7bc1b8a224603c8f733bd278f0807208
 ref=$(sed -n 's/^THRONE_AAR_REF=//p' nb4a.properties)
-test "$ref" = 9d4d1f34b6e97b6ed8f84da6d40105db971c1ff4
+test "$ref" = 4247933586e2b047ed84b73fd6a9c2932ec4b0db
 apk="$work/upstream.apk"
-curl -fL --retry 3 "https://github.com/ttrroyy/qThroneMobile/releases/download/$version/qThroneMobile-3.3-universal.apk" -o "$apk"
+curl -fL --retry 3 "https://github.com/ttrroyy/RawlineMobile/releases/download/$version/RawlineMobile-1.1.1-universal.apk" -o "$apk"
 echo "$sha  $apk" | sha256sum -c -
 # The native libraries come from this APK while the Java bindings are generated from THRONE_AAR_REF: both must be the
 # same core build, so the APK's BuildConfig.THRONE_CORE_REF has to name the pinned ref.
@@ -34,12 +34,12 @@ GOBIN="$work/bin" go install github.com/sagernet/gomobile/cmd/gobind@v0.1.13
     tags=$(sed -n 's/^TAGS="\(.*\)"/\1/p' ../script/build_android.sh)
     test -n "$tags"
     GOOS=android GOARCH=arm64 CGO_ENABLED=1 CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang" \
-      "$work/bin/gobind" -lang=java -javapkg=app.qthrone.core -libname=qthrone -outdir "$work/glue" -tags "$tags" ./mobile
+      "$work/bin/gobind" -lang=java -javapkg=app.rawline.core -libname=rawline -outdir "$work/glue" -tags "$tags" ./mobile
 )
 mkdir -p "$work/classes" "$root/app/libs"
 find "$work/glue/java" -name '*.java' > "$work/java-sources"
 javac --release 8 -classpath "$ANDROID_HOME/platforms/android-35/android.jar" -d "$work/classes" @"$work/java-sources"
-jar cf app/libs/qThroneCore.jar -C "$work/classes" .
+jar cf app/libs/RawlineCore.jar -C "$work/classes" .
 python3 - "$apk" <<'PY'
 import sys
 from pathlib import Path

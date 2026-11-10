@@ -1,4 +1,4 @@
-package app.qthrone.mobile.deploy
+package app.rawline.mobile.deploy
 
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.HostKey
@@ -41,7 +41,7 @@ class WdttPlusAdmin(private val server: DeployServer) {
 
     internal fun session(): Session {
         val jsch = JSch()
-        if (server["auth"] == "key") jsch.addIdentity("qThrone", server["key"].toByteArray(), null, server["keyPassword"].takeIf { it.isNotEmpty() }?.toByteArray())
+        if (server["auth"] == "key") jsch.addIdentity("Rawline", server["key"].toByteArray(), null, server["keyPassword"].takeIf { it.isNotEmpty() }?.toByteArray())
         // Only the key trusted during deploy is accepted here; a new key goes through the deploy editor.
         jsch.hostKeyRepository = object : HostKeyRepository {
             override fun check(host: String, bytes: ByteArray): Int {
@@ -52,7 +52,7 @@ class WdttPlusAdmin(private val server: DeployServer) {
             override fun add(hostkey: HostKey?, userinfo: UserInfo?) {}
             override fun remove(host: String?, type: String?) {}
             override fun remove(host: String?, type: String?, key: ByteArray?) {}
-            override fun getKnownHostsRepositoryID() = "qThrone encrypted servers"
+            override fun getKnownHostsRepositoryID() = "Rawline encrypted servers"
             override fun getHostKey(): Array<HostKey> = emptyArray()
             override fun getHostKey(host: String?, type: String?): Array<HostKey> = emptyArray()
         }
@@ -60,6 +60,8 @@ class WdttPlusAdmin(private val server: DeployServer) {
             setConfig("StrictHostKeyChecking", "yes")
             setConfig("PreferredAuthentications", if (server["auth"] == "key") "publickey" else "password,keyboard-interactive")
             if (server["auth"] != "key") setPassword(server["sshPassword"])
+            // Ten seconds of a keepalive, twice: a kept connection that died is noticed instead of hanging a screen.
+            setServerAliveInterval(10_000); setServerAliveCountMax(2)
             connect(20_000)
         }
     }
@@ -67,8 +69,7 @@ class WdttPlusAdmin(private val server: DeployServer) {
     /** One admin request; sudo's password, when needed, goes first on stdin. */
     private fun call(args: List<String>, timeoutMs: Long = 45_000): JSONObject {
         val request = JSONObject().put("main_password", server["password"]).put("args", JSONArray(args)).toString()
-        val ssh = session()
-        try {
+        return SshSessions.use(server) { ssh ->
             val channel = ssh.openChannel("exec") as ChannelExec
             val plan = rootStdinPlan("/usr/local/bin/wdtt-server admin --config-dir /etc/wdtt --request-stdin",
                 server["sudoPassword"].ifBlank { server["sshPassword"] },request+"\n")
@@ -91,7 +92,7 @@ class WdttPlusAdmin(private val server: DeployServer) {
             val json = JSONObject(line)
             if (!json.optBoolean("ok", false)) throw IllegalStateException(friendly(json.optString("message", line)))
             return json
-        } finally { ssh.disconnect() }
+        }
     }
 
     private fun friendly(raw: String): String {
@@ -146,9 +147,43 @@ class WdttPlusAdmin(private val server: DeployServer) {
         val ports = access.ports.ifBlank { state.server.optString("default_ports", "56000,56001,9000") }.split(',').map { it.trim().toIntOrNull() }
         if (ports.size != 3 || ports.any { it == null || it !in 1..65535 }) return null
         val host = state.server.optString("effective_public_ip").ifBlank { state.server.optString("public_ip") }.ifBlank { server["host"] }
-        return app.qthrone.mobile.outbound.types.WdttPlus().apply {
+        return app.rawline.mobile.outbound.types.WdttPlus().apply {
             this.server = host; serverPort = ports[0]!!; wgPort = ports[1]!!; localPort = ports[2]!!
             password = access.password; hashes = access.hashes; name = access.title
         }.exportToLink()
     }
+}
+
+/**
+ * One SSH connection per server while its screens are used, as the original apps keep it: a handshake for every request
+ * made the server screens slow. A changed address, login or secret opens a new one; a dead one is replaced once.
+ */
+internal object SshSessions {
+    private class Kept(val identity: String, val session: Session)
+    private val kept = HashMap<String, Kept>()
+    private fun identity(server: DeployServer) = listOf("host", "sshPort", "user", "auth", "sshPassword", "key", "keyPassword", "hostKey").joinToString("|") { server[it] }
+
+    private fun session(server: DeployServer): Pair<Session, Boolean> = synchronized(kept) {
+        val current = kept[server.id]
+        if (current != null && current.identity == identity(server) && current.session.isConnected) return current.session to true
+        current?.let { runCatching { it.session.disconnect() } }
+        val fresh = WdttPlusAdmin(server).session()
+        kept[server.id] = Kept(identity(server), fresh)
+        fresh to false
+    }
+
+    fun close(server: DeployServer) = synchronized(kept) { kept.remove(server.id)?.let { runCatching { it.session.disconnect() } } }
+
+    /** Only transport failures are retried: an answer of the server, good or bad, is final. */
+    inline fun <T> use(server: DeployServer, call: (Session) -> T): T {
+        val (session, reused) = open(server)
+        return try { call(session) } catch (error: Exception) {
+            val transport = error is com.jcraft.jsch.JSchException || (error is java.io.IOException && error !is MrttApiException)
+            if (!reused || !transport) throw error
+            close(server)
+            call(open(server).first)
+        }
+    }
+
+    @PublishedApi internal fun open(server: DeployServer) = session(server)
 }

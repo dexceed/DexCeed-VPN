@@ -1,18 +1,20 @@
-package app.qthrone.mobile.bg.autoselector
+package app.rawline.mobile.bg.autoselector
 
+import app.rawline.mobile.widget.ExitIp
+import app.rawline.mobile.ktx.runOnMainDispatcher
 import androidx.annotation.StringRes
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.bg.BaseService
-import app.qthrone.mobile.bg.ServiceNotification
-import app.qthrone.mobile.bg.proto.ProxyInstance
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.ProfileManager
-import app.qthrone.mobile.group.SubscriptionQueue
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.ktx.readableMessage
-import app.qthrone.mobile.outbound.config.AutoSelectorBuild
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.bg.BaseService
+import app.rawline.mobile.bg.ServiceNotification
+import app.rawline.mobile.bg.proto.ProxyInstance
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.ProfileManager
+import app.rawline.mobile.group.SubscriptionQueue
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.ktx.readableMessage
+import app.rawline.mobile.outbound.config.AutoSelectorBuild
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -506,7 +508,10 @@ object AutoSelectorRuntime {
         var persist = false
         synchronized(lock) {
             if (this.run !== run) return
+            val previousTag = run.sample?.selectedTag
             run.sample = sample
+            if (previousTag != null && previousTag != sample.selectedTag)
+                runOnMainDispatcher { ExitIp.refresh() }
             // "untested" counts as usable: it has not failed, only not been reached.
             val usable = sample.members.count { it.isUsable || it.state == AutoSelectorStatus.STATE_UNTESTED }
             // A suspended core (dropped Wi-Fi) must never count as an exhausted pool, nor one paused for device idle.

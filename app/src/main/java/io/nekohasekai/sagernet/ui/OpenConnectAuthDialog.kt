@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.res.ColorStateList
 import android.text.InputType
@@ -12,9 +12,9 @@ import com.google.android.material.button.MaterialButton
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import app.qthrone.mobile.R
-import app.qthrone.mobile.aidl.ISagerNetService
-import app.qthrone.mobile.ktx.readableMessage
+import app.rawline.mobile.R
+import app.rawline.mobile.aidl.ISagerNetService
+import app.rawline.mobile.ktx.readableMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -126,7 +126,7 @@ class OpenConnectAuthDialog(private val activity: MainActivity,
                     }
                     var selected = values.indexOf(field.optString("Value")).coerceAtLeast(0)
                     val input = MaterialButton(activity).apply {
-                        isAllCaps = false; cornerRadius = dp(16)
+                        isAllCaps = false; cornerRadius = dp(MobilePalette.rowDp)
                         setTextColor(MobilePalette.accent(activity))
                         backgroundTintList = ColorStateList.valueOf(MobilePalette.background)
                         text = labels.getOrElse(selected) { "" }

@@ -513,7 +513,7 @@
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
     <string name="action_sstp">SSTP</string>
-    <string name="throne_link">Throne link</string>
+    <string name="rawline_link">DexCeed VPN link</string>
     <string name="edit_as_json">Edit as JSON</string>
     <string name="raw_json_invalid">The JSON is not a valid profile of this type</string>
     <string name="tri_state_default">Keep default</string>
@@ -542,7 +542,7 @@
     <string name="settings_core">Core</string>
     <string name="settings_core_sum">Logging, statistics, Clash API, security, NTP</string>
     <string name="settings_backup">Backup &amp; restore</string>
-    <string name="settings_backup_sum">.thrbackup files shared with qThrone Desktop, local and WebDAV</string>
+    <string name="settings_backup_sum">.rwlbackup files shared with DexCeed VPN Desktop, local and WebDAV</string>
     <string name="setting_default">Default</string>
     <string name="setting_default_value">Default (%s)</string>
     <string name="cag_connection">Connection</string>
@@ -581,6 +581,8 @@
     <string name="vpn_ipv6">TUN IPv6</string>
     <string name="vpn_ipv6_sum">Give the tun an IPv6 address and route IPv6 through it</string>
     <string name="enable_tun_routing">Tun routing</string>
+    <string name="block_unowned_tun">Hide the tunnel from apps outside the VPN</string>
+    <string name="block_unowned_tun_sum">Drops connections with no owner: an app outside the VPN could send them through tun0 to learn the server\'s address. Android 10 or newer. Turn it off if hotspot sharing through the VPN stops working.</string>
     <string name="enable_tun_routing_sum">Keep the direct IP rules of the route profile outside the tun</string>
     <string name="block_quic">Block QUIC</string>
     <string name="block_quic_sum">Refuse QUIC (UDP 443) sent through a proxy so browsers switch to TCP at once. Direct traffic is not affected</string>
@@ -731,6 +733,15 @@
     <string name="route_new">New</string>
     <string name="route_new_structured">Structured profile</string>
     <string name="route_new_remote">Remote profile</string>
+    <string name="provider_route_new">Happ / Incy profile</string>
+    <string name="provider_route_name">Name</string>
+    <string name="provider_route_format">Format</string>
+    <string name="provider_route_default">Everything else goes</string>
+    <string name="provider_route_proxy">Through proxy</string>
+    <string name="provider_route_direct">Directly</string>
+    <string name="provider_route_sites">Sites, one per line: geosite:ru, domain:example.com</string>
+    <string name="provider_route_ips">IP, one per line: geoip:ru, 10.0.0.0/8</string>
+    <string name="provider_route_new_note">Works like any routing profile while it is selected and needs no subscription. It replaces the current profile rather than adding to it. A subscription with its own routing turned on uses that instead. The per-app list works in every case.</string>
     <string name="route_import">Import</string>
     <string name="route_download_profiles">Download profiles</string>
     <string name="route_download_empty">No route profile bundles are available. Refresh the repository list and try again.</string>
@@ -770,7 +781,7 @@
     <string name="route_import_clipboard_profile">Import routing profile \"%s\" from the clipboard?</string>
     <string name="route_import_clipboard_rules">Import a routing rule list from the clipboard?</string>
     <string name="route_import_paste_title">Import routing profile</string>
-    <string name="route_import_paste_hint">Paste a Throne route link, a remoteRoute link, a base64 blob, or a JSON rule array</string>
+    <string name="route_import_paste_hint">Paste a DexCeed VPN or Throne route link, a profile file address (https://…), a remoteRoute link, a base64 blob, or a JSON rule array</string>
     <string name="route_import_invalid_title">Invalid input</string>
     <string name="route_import_invalid">Could not import this routing profile:\n%s</string>
     <string name="route_import_warnings_title">Imported with warnings</string>
@@ -817,7 +828,7 @@
     <string name="route_profile_default_outbound">Default outbound</string>
     <string name="route_profile_remote_source">Remote source</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (throne://route link, base64, or JSON)</string>
+    <string name="route_profile_url_hint">https://… (rawline://route link, base64, or JSON)</string>
     <string name="route_profile_auto_update">Auto update</string>
     <string name="route_profile_auto_update_sum">Re-fetch this profile from the URL when remote profiles auto-update. Your local edits are overwritten on each update.</string>
     <string name="route_profile_fetch">Fetch now</string>
@@ -1185,7 +1196,7 @@
     </plurals>
     <string name="profiles_copy_links">Copy links</string>
     <string name="profiles_copy_share_links">Share links</string>
-    <string name="profiles_copy_throne_links">Throne links</string>
+    <string name="profiles_copy_rawline_links">DexCeed VPN links</string>
     <plurals name="profiles_copied">
         <item quantity="one">Copied %d item</item>
         <item quantity="other">Copied %d items</item>
@@ -1612,20 +1623,20 @@
     <string name="json_show_problems">Show problems</string>
     <string name="xray_finalmask">Finalmask</string>
 
-    <!-- backup (.thrbackup) -->
-    <!-- Tools › Backup (the desktop's .thrbackup, dialog_basic_settings.cpp) -->
+    <!-- backup (.rwlbackup) -->
+    <!-- Tools › Backup (the desktop's .rwlbackup, dialog_basic_settings.cpp) -->
     <string name="backup_part_profiles">Profiles (groups and proxies)</string>
     <string name="backup_part_routes">Routing profiles</string>
     <string name="backup_part_settings">Settings</string>
     <string name="backup_part_otp">OTP profiles (not restored on Android)</string>
-    <string name="backup_local_summary">Backups use the qThrone Desktop format (.thrbackup): either app restores them. WebDAV credentials stay on this device.</string>
+    <string name="backup_local_summary">Backups use the DexCeed VPN Desktop format (.rwlbackup): either app restores them. WebDAV credentials stay on this device.</string>
     <string name="backup_create">Create backup</string>
     <string name="backup_restore">Restore</string>
     <string name="backup_select_part">Select at least one part to include in the backup.</string>
     <string name="backup_creating">Creating backup…</string>
     <string name="backup_created">Backup created. Included: %s</string>
     <string name="backup_failed">Failed to create the backup: %s</string>
-    <string name="backup_open_label">Restore Throne backup</string>
+    <string name="backup_open_label">Restore DexCeed VPN backup</string>
 
     <string name="backup_restore_title">Restore backup</string>
     <string name="backup_restore_header">Backup created on %1$s (%2$s).\nSelect which parts to restore:</string>
@@ -1643,7 +1654,7 @@
     <string name="backup_restored_warnings">Backup restored. DexCeed VPN will now restart for the changes to take effect.\n\nNotes:\n%s</string>
     <string name="backup_restore_failed">Restore failed: %s</string>
 
-    <string name="backup_error_not_backup">Not a valid Throne backup file.</string>
+    <string name="backup_error_not_backup">Not a valid DexCeed VPN backup file.</string>
     <string name="backup_error_version">Unsupported backup format version: %d.\nThis backup may have been created with a newer version of the application.</string>
     <string name="backup_error_corrupt">The backup file is damaged or incomplete.</string>
     <string name="backup_error_nothing">This backup file does not contain any restorable data.</string>
@@ -1660,20 +1671,20 @@
     <string name="backup_warn_unlisted_profiles">%d profiles missing from their group\'s list were added at its end.</string>
     <string name="backup_warn_orphan_rules">%d rules of missing routing profiles were skipped.</string>
     <string name="backup_warn_unsupported_rules">%1$d routing rules were skipped because they use fields this app does not support (%2$s).</string>
-    <string name="backup_warn_raw_routes">%d raw routing profiles from qThrone Desktop are kept read-only; Android cannot use them.</string>
+    <string name="backup_warn_raw_routes">%d raw routing profiles from DexCeed VPN Desktop are kept read-only; Android cannot use them.</string>
     <string name="backup_warn_lan_access">The backup lets other devices connect (inbound address %s); this was turned off. Turn it on again in the inbound settings if you need it.</string>
 
     <string name="webdav_choose_backup">Choose a backup</string>
-    <string name="webdav_no_backups">No .thrbackup files were found in %s.</string>
+    <string name="webdav_no_backups">No .rwlbackup files were found in %s.</string>
     <string name="webdav_listing">Reading the WebDAV folder…</string>
     <string name="webdav_uploading">Uploading to WebDAV…</string>
     <string name="webdav_downloading">Downloading from WebDAV…</string>
 
     <!-- Desktop raw routing profiles: carried verbatim, never used -->
-    <string name="route_raw_summary">Raw (qThrone Desktop) · read-only</string>
+    <string name="route_raw_summary">Raw (DexCeed VPN Desktop) · read-only</string>
     <string name="route_raw_view">View</string>
-    <string name="route_raw_not_usable">Raw routing profiles from qThrone Desktop cannot be used on Android.</string>
-    <string name="route_raw_notice">This raw routing profile was made on qThrone Desktop. It is kept unchanged so that backups give it back to the desktop; Android cannot edit or use it.</string>
+    <string name="route_raw_not_usable">Raw routing profiles from DexCeed VPN Desktop cannot be used on Android.</string>
+    <string name="route_raw_notice">This raw routing profile was made on DexCeed VPN Desktop. It is kept unchanged so that backups give it back to the desktop; Android cannot edit or use it.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d desktop endpoint profile (OpenVPN / OpenConnect) is kept with this routing profile but not run on Android.</item>
         <item quantity="other">%d desktop endpoint profiles (OpenVPN / OpenConnect) are kept with this routing profile but not run on Android.</item>
@@ -1878,7 +1889,7 @@
     <string name="exit_ip_summary_location">Exit IP: %1$s (%2$s)</string>
     <string name="provider_routing_title">Subscription routing</string>
     <string name="provider_routing_use">Use %1$s routing</string>
-    <string name="provider_routing_use_summary">When disabled, use the common DexCeed VPN routing settings.</string>
+    <string name="provider_routing_use_summary">On: servers of this subscription use only its rules; the common DexCeed VPN routing is not applied and does not combine with them. Off: the common routing applies. The per-app list works in both cases.</string>
     <string name="provider_routing_profile">Routing profile</string>
     <string name="provider_routing_global">Proxy by default</string>
     <string name="provider_routing_fake_dns">FakeDNS</string>

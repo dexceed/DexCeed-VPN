@@ -1,13 +1,14 @@
-package app.qthrone.mobile.outbound.common
+package app.rawline.mobile.outbound.common
 
-import app.qthrone.mobile.outbound.BuildContext
-import app.qthrone.mobile.outbound.import.ClashProxy
-import app.qthrone.mobile.outbound.QtStrings
-import app.qthrone.mobile.outbound.json.JsonObject
-import app.qthrone.mobile.outbound.json.JsonValues
-import app.qthrone.mobile.outbound.link.Hosts
-import app.qthrone.mobile.outbound.link.LinkParser
-import app.qthrone.mobile.outbound.link.ParsedLink
+import app.rawline.mobile.outbound.BuildContext
+import app.rawline.mobile.outbound.import.ClashProxy
+import app.rawline.mobile.outbound.QtStrings
+import app.rawline.mobile.outbound.json.JsonArray
+import app.rawline.mobile.outbound.json.JsonObject
+import app.rawline.mobile.outbound.json.JsonValues
+import app.rawline.mobile.outbound.link.Hosts
+import app.rawline.mobile.outbound.link.LinkParser
+import app.rawline.mobile.outbound.link.ParsedLink
 
 /** Transport (include/configs/common/transport.h, src/configs/common/transport.cpp): the sing-box V2Ray transport. */
 class Transport {
@@ -21,6 +22,8 @@ class Transport {
     @JvmField var max_early_data: Int = 0
     @JvmField var early_data_header_name: String = ""
     @JvmField var service_name: String = ""
+    /** gRPC :authority a panel may require; only Xray can send it. */
+    @JvmField var authority: String = ""
 
     /** Never persisted: the parsed source asked for the raw TCP HTTP header, which sing-box reproduces only without TLS. */
     @JvmField var rawHttpHeader: Boolean = false
@@ -38,7 +41,7 @@ class Transport {
             type = "http"
             method = "GET"
         }
-        // a link naming no transport (the throneExtra of a V2RayN link) keeps what the first parse found
+        // a link naming no transport (the rawlineExtra of a V2RayN link) keeps what the first parse found
         if (q.has("type") || rawHttp) rawHttpHeader = rawHttp
         if (q.has("host")) host = q.valueFully("host")
         if (q.has("path")) path = q.valueFully("path")
@@ -54,6 +57,7 @@ class Transport {
         if (q.has("max_early_data")) max_early_data = QtStrings.toInt(q.value("max_early_data"))
         if (q.has("early_data_header_name")) early_data_header_name = q.value("early_data_header_name")
         if (q.has("serviceName")) service_name = q.valueFully("serviceName")
+        if (q.has("authority")) authority = q.valueFully("authority")
         return true
     }
 
@@ -90,6 +94,7 @@ class Transport {
         if (obj.contains("max_early_data")) max_early_data = obj.int("max_early_data")
         if (obj.contains("early_data_header_name")) early_data_header_name = obj.string("early_data_header_name")
         if (obj.contains("service_name")) service_name = obj.string("service_name")
+        if (obj.contains("authority")) authority = obj.string("authority")
         return true
     }
 
@@ -165,6 +170,7 @@ class Transport {
         if (max_early_data > 0) q.add("max_early_data" to max_early_data.toString())
         if (early_data_header_name.isNotEmpty()) q.add("early_data_header_name" to early_data_header_name)
         if (service_name.isNotEmpty()) q.add("serviceName" to service_name)
+        if (authority.isNotEmpty()) q.add("authority" to authority)
         return q
     }
 
@@ -196,6 +202,7 @@ class Transport {
         if (idle_timeout.isNotEmpty()) obj["idle_timeout"] = idle_timeout
         if (ping_timeout.isNotEmpty()) obj["ping_timeout"] = ping_timeout
         if (service_name.isNotEmpty()) obj["service_name"] = service_name
+        if (authority.isNotEmpty()) obj["authority"] = authority
         return obj
     }
 
@@ -207,9 +214,32 @@ class Transport {
         return obj
     }
 
+    /**
+     * sing-box's WS and gRPC differ from Xray in what reaches the server (no :authority, no custom gRPC paths, its own
+     * ALPN), and panels behind a reverse proxy or fallbacks answer 404 or close. Xray has no switch for an unverified
+     * certificate any more, so such a profile stays on sing-box.
+     */
+    fun runsOnXray(tls: Tls): Boolean = (type == "ws" || type == "grpc") && !tls.insecure
+
+    /** The sing-box "authority" field does not exist: it stays out of the outbound the core reads. */
+    private fun dropAuthority(obj: JsonObject): JsonObject { obj.remove("authority"); return obj }
+
+    /**
+     * Xray fixes ALPN by transport whatever a link says: a WebSocket cannot run over a negotiated h2 (the server closes it,
+     * "EOF"), gRPC needs h2. Without an ALPN in the profile sing-box already picks these itself.
+     */
+    fun tlsFor(tls: JsonObject): JsonObject {
+        if (!tls.contains("alpn")) return tls
+        when (type) {
+            "ws", "httpupgrade" -> tls["alpn"] = JsonArray.of("http/1.1")
+            "grpc" -> tls["alpn"] = JsonArray.of("h2")
+        }
+        return tls
+    }
+
     /** transport.cpp:192-202: a comma list of http hosts becomes an array of trimmed hosts. */
     fun build(ctx: BuildContext): JsonObject {
-        val obj = exportToJson()
+        val obj = dropAuthority(exportToJson())
         val exported = obj.string("host")
         if (type == "http" && exported.contains(',')) {
             val hosts = QtStrings.splitSkipEmpty(exported, ",").map { it.trim() }

@@ -20,8 +20,8 @@ def capture(name):
     (out / f'{name}.png').write_bytes(subprocess.check_output([adb, 'exec-out', 'screencap', '-p']))
 
 def screen_xml():
-    shell('uiautomator', 'dump', '/sdcard/qthrone-preview.xml')
-    xml = shell('cat', '/sdcard/qthrone-preview.xml')
+    shell('uiautomator', 'dump', '/sdcard/rawline-preview.xml')
+    xml = shell('cat', '/sdcard/rawline-preview.xml')
     # Google emulator launcher can ANR during boot; never suppress an app ANR.
     if "Pixel Launcher isn't responding" in xml:
         (out / 'launcher-anr.xml').write_text(xml)
@@ -30,8 +30,8 @@ def screen_xml():
                 x1,y1,x2,y2=map(int,re.findall(r'\d+',node.attrib['bounds']))
                 shell('input','tap',str((x1+x2)//2),str((y1+y2)//2))
                 time.sleep(3)
-                shell('uiautomator','dump','/sdcard/qthrone-preview.xml')
-                return shell('cat','/sdcard/qthrone-preview.xml')
+                shell('uiautomator','dump','/sdcard/rawline-preview.xml')
+                return shell('cat','/sdcard/rawline-preview.xml')
     return xml
 
 def scroll_to_text(label):
@@ -84,9 +84,9 @@ def choose_accent(label):
     tap_text(label);time.sleep(3)
 
 packages = [line.removeprefix('package:').strip() for line in shell('pm', 'list', 'packages').splitlines()
-            if line.startswith('package:app.qthrone.mobile')]
-assert len(packages) == 1, 'Expected one isolated qThrone installation'
-activity = packages[0] + '/app.qthrone.mobile.ui.MainActivity'
+            if line.startswith('package:app.rawline.mobile')]
+assert len(packages) == 1, 'Expected one isolated Rawline installation'
+activity = packages[0] + '/app.rawline.mobile.ui.MainActivity'
 shell('pm', 'grant', packages[0], 'android.permission.POST_NOTIFICATIONS')
 shell('dumpsys', 'deviceidle', 'whitelist', '+' + packages[0])
 shell('am', 'force-stop', packages[0])
@@ -117,7 +117,7 @@ for label,name in [('TUN settings','27-tun-settings'),('Core settings','28-core-
     assert 'General settings' in screen_xml(), 'Settings back navigation returned to home'
 
 tap_text('Backup and restore');tap_text('Локально');capture('32-backup-buttons')
-assert 'qThrone Desktop' in screen_xml(), 'Desktop backup format label missing'
+assert 'Rawline Desktop' in screen_xml(), 'Desktop backup format label missing'
 shell('input','keyevent','4');time.sleep(2)
 shell('input','keyevent','4');time.sleep(2)
 tap_text('Routing settings')

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui.route
+package app.rawline.mobile.ui.route
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -21,33 +21,33 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
-import app.qthrone.mobile.R
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.DnsServerHistory
-import app.qthrone.mobile.database.RouteDnsSettings
-import app.qthrone.mobile.database.RouteManager
-import app.qthrone.mobile.databinding.LayoutRouteAddRuleBinding
-import app.qthrone.mobile.databinding.LayoutRouteDnsBinding
-import app.qthrone.mobile.databinding.LayoutRouteProfileHeaderBinding
-import app.qthrone.mobile.databinding.LayoutRouteRawBinding
-import app.qthrone.mobile.databinding.LayoutRouteRuleItemBinding
-import app.qthrone.mobile.databinding.LayoutRouteRulesTitleBinding
-import app.qthrone.mobile.group.RemoteRouteUpdater
-import app.qthrone.mobile.ktx.FixedLinearLayoutManager
-import app.qthrone.mobile.ktx.confirmAction
-import app.qthrone.mobile.route.OutboundIds
-import app.qthrone.mobile.route.RouteDns
-import app.qthrone.mobile.route.RouteProfile
-import app.qthrone.mobile.route.RouteRule
-import app.qthrone.mobile.route.RuleType
-import app.qthrone.mobile.ui.DnsServerSuggestions
-import app.qthrone.mobile.ui.ThemedActivity
-import app.qthrone.mobile.utils.PackageCache
-import app.qthrone.mobile.widget.UndoSnackbarManager
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.R
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.DnsServerHistory
+import app.rawline.mobile.database.RouteDnsSettings
+import app.rawline.mobile.database.RouteManager
+import app.rawline.mobile.databinding.LayoutRouteAddRuleBinding
+import app.rawline.mobile.databinding.LayoutRouteDnsBinding
+import app.rawline.mobile.databinding.LayoutRouteProfileHeaderBinding
+import app.rawline.mobile.databinding.LayoutRouteRawBinding
+import app.rawline.mobile.databinding.LayoutRouteRuleItemBinding
+import app.rawline.mobile.databinding.LayoutRouteRulesTitleBinding
+import app.rawline.mobile.group.RemoteRouteUpdater
+import app.rawline.mobile.ktx.FixedLinearLayoutManager
+import app.rawline.mobile.ktx.confirmAction
+import app.rawline.mobile.route.OutboundIds
+import app.rawline.mobile.route.RouteDns
+import app.rawline.mobile.route.RouteProfile
+import app.rawline.mobile.route.RouteRule
+import app.rawline.mobile.route.RuleType
+import app.rawline.mobile.ui.DnsServerSuggestions
+import app.rawline.mobile.ui.ThemedActivity
+import app.rawline.mobile.utils.PackageCache
+import app.rawline.mobile.widget.UndoSnackbarManager
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -87,6 +87,8 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
         var appLabels: Map<String, String> = emptyMap()
         var warnings: List<String> = emptyList()
         var dirty = false
+        /** What the editor opened with; null for a new profile that has to be saved anyway. */
+        var opened: String? = null
         var fetching = false
         var saving = false
 
@@ -140,8 +142,8 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
         list = findViewById(R.id.rule_list)
         list.layoutManager = FixedLinearLayoutManager(list)
         list.adapter = ConcatAdapter(headerAdapter, dnsAdapter, rawAdapter, titleAdapter, rulesAdapter, footerAdapter)
-        findViewById<android.view.View>(R.id.coordinator).setBackgroundColor(app.qthrone.mobile.ui.MobilePalette.background)
-        app.qthrone.mobile.ui.MobileViewStyle.apply(findViewById(R.id.coordinator))
+        findViewById<android.view.View>(R.id.coordinator).setBackgroundColor(app.rawline.mobile.ui.MobilePalette.background)
+        app.rawline.mobile.ui.MobileViewStyle.apply(findViewById(R.id.coordinator))
         list.applyListInsets(ime = true)
         undoManager = UndoSnackbarManager(this, rulesAdapter)
         touchHelper = ItemTouchHelper(TouchCallback()).also { it.attachToRecyclerView(list) }
@@ -199,6 +201,7 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
             model.dnsDraft = p.dns ?: loaded.dnsGlobal
             model.dnsOpened = model.dnsDraft
             model.dirty = json != null
+            model.opened = if (json != null) null else editorState(p)
             refreshAll()
         }
     }
@@ -231,6 +234,9 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
     private fun markDirty() {
         model.dirty = true
     }
+
+    private fun editorState(p: RouteProfile) = listOf(RouteJson.profileToJson(p), p.name.trim(), p.default_outbound_id, p.remote_url.trim(),
+        p.auto_update, model.dnsCustom, model.dnsDraft).joinToString("\u0000")
 
     private fun countChanged() = titleAdapter.notifyItemChanged(0)
 
@@ -285,11 +291,12 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
     }
 
     private fun close() {
-        if (!model.dirty) {
+        // An edit put back by hand leaves nothing to save.
+        if (!model.dirty || model.profile?.let(::editorState) == model.opened) {
             finish()
             return
         }
-        MaterialAlertDialogBuilder(this)
+        MobileAlertDialogBuilder(this)
             .setTitle(R.string.unsaved_changes_prompt)
             .setPositiveButton(R.string.save) { _, _ -> save() }
             .setNegativeButton(R.string.discard) { _, _ -> finish() }
@@ -298,7 +305,7 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
     }
 
     private fun message(title: Int, text: String) {
-        MaterialAlertDialogBuilder(this)
+        MobileAlertDialogBuilder(this)
             .setTitle(title)
             .setMessage(text)
             .setPositiveButton(android.R.string.ok, null)
@@ -372,7 +379,7 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
         ruleEditor.launch(Intent(this, RouteRuleActivity::class.java).apply {
             putExtra(RouteRuleActivity.EXTRA_RULE, RouteJson.ruleToJson(rule))
             putExtra(RouteRuleActivity.EXTRA_INDEX, -1)
-            putExtra(RuleSetPickerActivity.EXTRA_GEO_FILES, app.qthrone.mobile.route.ProviderRouting.stored(p) != null)
+            putExtra(RuleSetPickerActivity.EXTRA_GEO_FILES, app.rawline.mobile.route.ProviderRouting.stored(p) != null)
         })
     }
 
@@ -383,7 +390,7 @@ class RouteProfileActivity : ThemedActivity(R.layout.layout_route_profile) {
         ruleEditor.launch(Intent(this, RouteRuleActivity::class.java).apply {
             putExtra(RouteRuleActivity.EXTRA_RULE, RouteJson.ruleToJson(rule))
             putExtra(RouteRuleActivity.EXTRA_INDEX, index)
-            putExtra(RuleSetPickerActivity.EXTRA_GEO_FILES, app.qthrone.mobile.route.ProviderRouting.stored(p) != null)
+            putExtra(RuleSetPickerActivity.EXTRA_GEO_FILES, app.rawline.mobile.route.ProviderRouting.stored(p) != null)
         })
     }
 

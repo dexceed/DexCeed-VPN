@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui.settings
+package app.rawline.mobile.ui.settings
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -10,21 +10,21 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
-import app.qthrone.mobile.BootReceiver
-import app.qthrone.mobile.BuildConfig
-import app.qthrone.mobile.Key
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.database.SettingsRegistry
-import app.qthrone.mobile.ktx.needReload
-import app.qthrone.mobile.ktx.remove
-import app.qthrone.mobile.ui.MainActivity
-import app.qthrone.mobile.utils.AlwaysOnVpn
-import app.qthrone.mobile.utils.AppLocale
-import app.qthrone.mobile.utils.BatteryOptimizations
-import app.qthrone.mobile.utils.OemBackground
-import app.qthrone.mobile.utils.Theme
+import app.rawline.mobile.BootReceiver
+import app.rawline.mobile.BuildConfig
+import app.rawline.mobile.Key
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.database.SettingsRegistry
+import app.rawline.mobile.ktx.needReload
+import app.rawline.mobile.ktx.remove
+import app.rawline.mobile.ui.MainActivity
+import app.rawline.mobile.utils.AlwaysOnVpn
+import app.rawline.mobile.utils.AppLocale
+import app.rawline.mobile.utils.BatteryOptimizations
+import app.rawline.mobile.utils.OemBackground
+import app.rawline.mobile.utils.Theme
 import moe.matsuri.nb4a.ui.ColorPickerPreference
 import moe.matsuri.nb4a.ui.SimpleMenuPreference
 
@@ -117,6 +117,13 @@ class GeneralSettingsFragment : SettingsScreenFragment(R.xml.settings_general) {
 class AppearanceSettingsFragment : SettingsScreenFragment(R.xml.settings_appearance) {
 
     override fun bind() {
+        pref<SimpleMenuPreference>("qmobileUiStyle").setOnPreferenceChangeListener { _, _ -> applyThemeInstantly(); true }
+        // The new style is black or white with one look: accent colours, seasonal art and a bottom tile bar mean nothing there.
+        val modern = app.rawline.mobile.ui.MobileStyle.new
+        listOf(Key.APP_THEME, "seasonal_decoration", "qmobileListMode").forEach { pref<Preference>(it).isVisible = !modern }
+        pref<Preference>("qmobileEditLayout").setOnPreferenceClickListener {
+            startActivity(android.content.Intent(requireContext(), app.rawline.mobile.ui.MobileLayoutEditorActivity::class.java)); true
+        }
         pref<Preference>("seasonal_decoration").setOnPreferenceChangeListener { _, _ -> applyThemeInstantly(); true }
         pref<ColorPickerPreference>(Key.APP_THEME).setOnPreferenceChangeListener { _, _ ->
             DataStore.useSystemTheme = false
@@ -124,13 +131,17 @@ class AppearanceSettingsFragment : SettingsScreenFragment(R.xml.settings_appeara
             true
         }
         pref<SimpleMenuPreference>("qmobileSurfaceTheme").apply {
-            value = if (DataStore.amoledTheme && DataStore.nightTheme == 1) "oled" else when (DataStore.nightTheme) {
+            if (modern) {
+                setEntries(R.array.qmobile_surface_themes_new)
+                setEntryValues(R.array.qmobile_surface_values_new)
+            }
+            value = if (modern && DataStore.nightTheme == 1) "oled" else if (DataStore.amoledTheme && DataStore.nightTheme == 1) "oled" else when (DataStore.nightTheme) {
                 0 -> "system"
                 2 -> "light"
                 else -> "dark"
             }
             setOnPreferenceChangeListener { _, selected ->
-                DataStore.amoledTheme = selected == "oled"
+                if (!modern) DataStore.amoledTheme = selected == "oled"
                 DataStore.nightTheme = when (selected) { "system" -> 0; "light" -> 2; else -> 1 }
                 Theme.currentNightMode = DataStore.nightTheme
                 // The recreated host applies night mode. Applying it here as well
@@ -152,7 +163,9 @@ class AppearanceSettingsFragment : SettingsScreenFragment(R.xml.settings_appeara
         val host = activity ?: return
         host.window?.decorView?.post {
             if (!host.isFinishing && !host.isDestroyed) {
-                ActivityCompat.recreate(host)
+                app.rawline.mobile.ui.MobileScreenMotion.holdForRecreate(host) {
+                    if (!host.isFinishing && !host.isDestroyed) ActivityCompat.recreate(host)
+                }
             }
         }
     }

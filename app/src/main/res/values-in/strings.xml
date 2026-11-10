@@ -457,7 +457,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Tautan Throne</string>
+    <string name="rawline_link">Tautan DexCeed VPN</string>
     <string name="edit_as_json">Sunting sebagai JSON</string>
     <string name="raw_json_invalid">JSON bukan profil yang valid untuk jenis ini</string>
     <string name="tri_state_default">Pertahankan default</string>
@@ -484,7 +484,7 @@
     <string name="settings_core">Inti</string>
     <string name="settings_core_sum">Pencatatan, statistik, Clash API, keamanan, NTP</string>
     <string name="settings_backup">Cadangan &amp; pemulihan</string>
-    <string name="settings_backup_sum">Berkas .thrbackup yang dibagikan dengan Throne desktop, lokal dan WebDAV</string>
+    <string name="settings_backup_sum">Berkas .rwlbackup yang dibagikan dengan DexCeed VPN desktop, lokal dan WebDAV</string>
     <string name="setting_default">Default</string>
     <string name="setting_default_value">Default (%s)</string>
     <string name="cag_connection">Koneksi</string>
@@ -659,7 +659,7 @@
     <string name="route_import_clipboard_profile">Impor profil rute \"%s\" dari papan klip?</string>
     <string name="route_import_clipboard_rules">Impor daftar aturan rute dari papan klip?</string>
     <string name="route_import_paste_title">Impor profil rute</string>
-    <string name="route_import_paste_hint">Tempel tautan rute Throne, tautan remoteRoute, blob base64, atau larik aturan JSON</string>
+    <string name="route_import_paste_hint">Tempel tautan rute DexCeed VPN, tautan remoteRoute, blob base64, atau larik aturan JSON</string>
     <string name="route_import_invalid_title">Input tidak valid</string>
     <string name="route_import_invalid">Tidak dapat mengimpor profil rute ini:\n%s</string>
     <string name="route_import_warnings_title">Diimpor dengan peringatan</string>
@@ -706,7 +706,7 @@
     <string name="route_profile_default_outbound">Outbound default</string>
     <string name="route_profile_remote_source">Sumber remote</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (tautan throne://route, base64, atau JSON)</string>
+    <string name="route_profile_url_hint">https://… (tautan rawline://route, base64, atau JSON)</string>
     <string name="route_profile_auto_update">Pembaruan otomatis</string>
     <string name="route_profile_auto_update_sum">Ambil ulang profil ini dari URL saat profil remote diperbarui otomatis. Suntingan lokal Anda ditimpa setiap pembaruan.</string>
     <string name="route_profile_fetch">Ambil sekarang</string>
@@ -1028,7 +1028,7 @@
     </plurals>
     <string name="profiles_copy_links">Salin tautan</string>
     <string name="profiles_copy_share_links">Tautan berbagi</string>
-    <string name="profiles_copy_throne_links">Tautan Throne</string>
+    <string name="profiles_copy_rawline_links">Tautan DexCeed VPN</string>
     <plurals name="profiles_copied">
         <item quantity="one">Menyalin %d item</item>
         <item quantity="other">Menyalin %d item</item>
@@ -1415,14 +1415,14 @@
     <string name="backup_part_routes">Profil rute</string>
     <string name="backup_part_settings">Pengaturan</string>
     <string name="backup_part_otp">Profil OTP (tidak dipulihkan di Android)</string>
-    <string name="backup_local_summary">Cadangan menggunakan format desktop Throne (.thrbackup): kedua aplikasi dapat memulihkannya. Kredensial WebDAV tetap di perangkat ini.</string>
+    <string name="backup_local_summary">Cadangan menggunakan format desktop DexCeed VPN (.rwlbackup): kedua aplikasi dapat memulihkannya. Kredensial WebDAV tetap di perangkat ini.</string>
     <string name="backup_create">Buat cadangan</string>
     <string name="backup_restore">Pulihkan</string>
     <string name="backup_select_part">Pilih setidaknya satu bagian untuk disertakan dalam cadangan.</string>
     <string name="backup_creating">Membuat cadangan…</string>
     <string name="backup_created">Cadangan dibuat. Termasuk: %s</string>
     <string name="backup_failed">Gagal membuat cadangan: %s</string>
-    <string name="backup_open_label">Pulihkan cadangan Throne</string>
+    <string name="backup_open_label">Pulihkan cadangan DexCeed VPN</string>
     <string name="backup_restore_title">Pulihkan cadangan</string>
     <string name="backup_restore_header">Cadangan dibuat pada %1$s (%2$s).\nPilih bagian yang akan dipulihkan:</string>
     <string name="backup_unknown_date">tanggal tidak diketahui</string>
@@ -1438,7 +1438,7 @@
     <string name="backup_restored">Cadangan dipulihkan dengan berhasil. DexCeed VPN akan memulai ulang agar perubahan berlaku.</string>
     <string name="backup_restored_warnings">Cadangan dipulihkan. DexCeed VPN akan memulai ulang agar perubahan berlaku.\n\nCatatan:\n%s</string>
     <string name="backup_restore_failed">Pemulihan gagal: %s</string>
-    <string name="backup_error_not_backup">Bukan berkas cadangan Throne yang valid.</string>
+    <string name="backup_error_not_backup">Bukan berkas cadangan DexCeed VPN yang valid.</string>
     <string name="backup_error_version">Versi format cadangan tidak didukung: %d.\nCadangan ini mungkin dibuat dengan versi aplikasi yang lebih baru.</string>
     <string name="backup_error_corrupt">Berkas cadangan rusak atau tidak lengkap.</string>
     <string name="backup_error_nothing">Berkas cadangan ini tidak memuat data yang dapat dipulihkan.</string>
@@ -1453,17 +1453,17 @@
     <string name="backup_warn_dropped_profiles">%d profil tanpa grup dilewati.</string>
     <string name="backup_warn_unlisted_profiles">%d profil yang hilang dari daftar grupnya ditambahkan di akhirnya.</string>
     <string name="backup_warn_orphan_rules">%d aturan profil rute yang hilang dilewati.</string>
-    <string name="backup_warn_raw_routes">%d profil rute mentah dari Throne desktop dipertahankan hanya-baca; Android tidak dapat menggunakannya.</string>
+    <string name="backup_warn_raw_routes">%d profil rute mentah dari DexCeed VPN desktop dipertahankan hanya-baca; Android tidak dapat menggunakannya.</string>
     <string name="backup_warn_lan_access">Cadangan mengizinkan perangkat lain terhubung (alamat inbound %s); ini dimatikan. Nyalakan lagi di pengaturan inbound jika Anda membutuhkannya.</string>
     <string name="webdav_choose_backup">Pilih cadangan</string>
-    <string name="webdav_no_backups">Tidak ditemukan berkas .thrbackup di %s.</string>
+    <string name="webdav_no_backups">Tidak ditemukan berkas .rwlbackup di %s.</string>
     <string name="webdav_listing">Membaca folder WebDAV…</string>
     <string name="webdav_uploading">Mengunggah ke WebDAV…</string>
     <string name="webdav_downloading">Mengunduh dari WebDAV…</string>
-    <string name="route_raw_summary">Mentah (Throne desktop) · hanya-baca</string>
+    <string name="route_raw_summary">Mentah (DexCeed VPN desktop) · hanya-baca</string>
     <string name="route_raw_view">Lihat</string>
-    <string name="route_raw_not_usable">Profil rute mentah dari Throne desktop tidak dapat digunakan di Android.</string>
-    <string name="route_raw_notice">Profil rute mentah ini dibuat di Throne desktop. Dipertahankan tidak berubah agar cadangan mengembalikannya ke desktop; Android tidak dapat menyunting atau menggunakannya.</string>
+    <string name="route_raw_not_usable">Profil rute mentah dari DexCeed VPN desktop tidak dapat digunakan di Android.</string>
+    <string name="route_raw_notice">Profil rute mentah ini dibuat di DexCeed VPN desktop. Dipertahankan tidak berubah agar cadangan mengembalikannya ke desktop; Android tidak dapat menyunting atau menggunakannya.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d profil titik akhir desktop (OpenVPN / OpenConnect) dipertahankan dengan profil rute ini tetapi tidak berjalan di Android.</item>
         <item quantity="other">%d profil titik akhir desktop (OpenVPN / OpenConnect) dipertahankan dengan profil rute ini tetapi tidak berjalan di Android.</item>

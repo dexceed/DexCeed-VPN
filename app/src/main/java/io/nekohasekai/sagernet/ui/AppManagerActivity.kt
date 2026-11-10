@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -24,20 +24,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
-import app.qthrone.mobile.BuildConfig
-import app.qthrone.mobile.R
-import app.qthrone.mobile.SagerNet
-import app.qthrone.mobile.database.DataStore
-import app.qthrone.mobile.databinding.LayoutAppsBinding
-import app.qthrone.mobile.databinding.LayoutAppsItemBinding
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.app
-import app.qthrone.mobile.ktx.confirmAction
-import app.qthrone.mobile.ktx.crossFadeFrom
-import app.qthrone.mobile.ktx.onMainDispatcher
-import app.qthrone.mobile.ktx.runOnDefaultDispatcher
-import app.qthrone.mobile.utils.PackageCache
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.BuildConfig
+import app.rawline.mobile.R
+import app.rawline.mobile.SagerNet
+import app.rawline.mobile.database.DataStore
+import app.rawline.mobile.databinding.LayoutAppsBinding
+import app.rawline.mobile.databinding.LayoutAppsItemBinding
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.app
+import app.rawline.mobile.ktx.confirmAction
+import app.rawline.mobile.ktx.crossFadeFrom
+import app.rawline.mobile.ktx.onMainDispatcher
+import app.rawline.mobile.ktx.runOnDefaultDispatcher
+import app.rawline.mobile.utils.PackageCache
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
@@ -84,10 +84,11 @@ class AppManagerActivity : ThemedActivity() {
         init {
             binding.root.setOnClickListener(this)
             binding.root.setCardBackgroundColor(MobilePalette.surface)
-            binding.root.strokeWidth = 0
-            binding.root.radius = 20 * resources.displayMetrics.density
+            binding.root.strokeWidth = 1
+            binding.root.strokeColor = MobilePalette.outline
+            binding.root.radius = MobilePalette.rowDp * resources.displayMetrics.density
             binding.title.setTextColor(MobilePalette.text)
-            binding.title.setTypeface(null, android.graphics.Typeface.BOLD)
+            binding.title.setTypeface(binding.title.typeface,android.graphics.Typeface.BOLD)
             binding.title.textSize = 16f
             binding.desc.setTextColor(MobilePalette.muted)
         }
@@ -264,7 +265,7 @@ class AppManagerActivity : ThemedActivity() {
 
         binding = LayoutAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.root.setBackgroundColor(MobilePalette.background)
+        binding.root.setBackgroundColor(MobilePalette.screen)
         binding.toolbar.setBackgroundColor(MobilePalette.toolbar)
         binding.toolbar.setTitleTextColor(MobilePalette.text)
 
@@ -309,7 +310,7 @@ class AppManagerActivity : ThemedActivity() {
         binding.appModeSummary.setTextColor(MobilePalette.muted)
         binding.appModeCard.setCardBackgroundColor(MobilePalette.surface)
         binding.appModeCard.strokeWidth = 0
-        binding.appModeCard.radius = 20 * resources.displayMetrics.density
+        binding.appModeCard.radius = MobilePalette.cardDp * resources.displayMetrics.density
         listOf(binding.appProxyModeDisable, binding.appProxyModeOn, binding.appProxyModeBypass).forEach {
             it.setTextColor(MobilePalette.text)
             it.buttonTintList = android.content.res.ColorStateList(

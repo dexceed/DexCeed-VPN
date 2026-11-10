@@ -1,4 +1,4 @@
-package app.qthrone.mobile.bg.carrier
+package app.rawline.mobile.bg.carrier
 
 import kotlinx.coroutines.CompletableDeferred
 import java.util.concurrent.atomic.AtomicBoolean
@@ -11,7 +11,13 @@ object CarrierPool {
         var process:CarrierProcess?=null
         var closing=false
         val closed=CompletableDeferred<Unit>()
+        val listeners=java.util.concurrent.CopyOnWriteArrayList<Listener>()
+        @Volatile var stage:NativeConnectionStage?=null
+        @Volatile var workers:Pair<Int,Int>?=null
+        fun status(value:NativeConnectionStage) { stage=value;listeners.forEach { runCatching { it.onStatus(value) } } }
+        fun workers(active:Int,total:Int) { workers=active to total;listeners.forEach { runCatching { it.onWorkers(active,total) } } }
     }
+    private class Listener(val onStatus:(NativeConnectionStage)->Unit,val onWorkers:(Int,Int)->Unit)
     private class Acquisition(val entry:Entry?=null,val owner:Boolean=false,val wait:CompletableDeferred<Unit>?=null)
     private val entries=mutableMapOf<String,Entry>()
     private val probeStartup=NativeProbeStartupGate()
@@ -26,7 +32,7 @@ object CarrierPool {
     }
     suspend fun acquire(plan:CarrierPlan, interactive: Boolean=true,latencyProbe:Boolean=!interactive,
         onStatus:(NativeConnectionStage)->Unit={},onWorkers:(Int,Int)->Unit={ _,_ -> }):Lease {
-        if(!interactive && plan.kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT,CarrierKind.WDTTPLUS) && activePlan(plan.key)==null) {
+        if(!interactive && plan.kind in listOf(CarrierKind.QWDTT,CarrierKind.CSQTT,CarrierKind.MRTT,CarrierKind.WDTTPLUS,CarrierKind.FREETURN,CarrierKind.FREETURN_TCP) && activePlan(plan.key)==null) {
             // Do not publish a queued test entry: a user connection must not wait behind it.
             var lease:Lease?=null
             try {
@@ -67,7 +73,12 @@ object CarrierPool {
         val acquisition=takeEntry(plan,interactive,latencyProbe)
         val entry=acquisition.entry!!
         val owner=acquisition.owner
+        val listener=Listener(onStatus,onWorkers)
+        entry.listeners.add(listener)
+        // A lease that joins a running session starts from what it already reported.
+        if(!owner) { entry.stage?.let { runCatching { onStatus(it) } };entry.workers?.let { (active,total) -> runCatching { onWorkers(active,total) } } }
         fun release() {
+            entry.listeners.remove(listener)
             val last=synchronized(entries) {
                 entry.references--
                 (entry.references==0 && entries[plan.key]===entry).also { if(it) entry.closing=true }
@@ -87,12 +98,12 @@ object CarrierPool {
         }
         try {
             if(owner) {
-                val context=app.qthrone.mobile.ktx.app
+                val context=app.rawline.mobile.ktx.app
                 try {
                     val privateJson=NativeSessionPolicy.probeConfig(plan.kind,plan.privateJson,interactive,latencyProbe)
                     val started=CarrierProcess.start(plan.kind,java.io.File(context.applicationInfo.nativeLibraryDir),
                         java.io.File(context.cacheDir,"carriers"),android.os.Build.VERSION.SDK_INT,
-                        privateJson,plan.port,plan.credentials,allowInteractions=interactive,onStatus=onStatus,onWorkers=onWorkers,
+                        privateJson,plan.port,plan.credentials,allowInteractions=interactive,onStatus=entry::status,onWorkers=entry::workers,
                         onCreated={ process -> synchronized(entries) { entry.process=process } })
                     synchronized(entries) { entry.process=started }
                     entry.ready.complete(started)

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.os.Bundle
 import android.text.Editable
@@ -13,11 +13,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.DeployServer
-import app.qthrone.mobile.deploy.DeployStore
-import app.qthrone.mobile.deploy.QwdttAdmin
-import app.qthrone.mobile.outbound.types.VkCallHash
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.DeployServer
+import app.rawline.mobile.deploy.DeployStore
+import app.rawline.mobile.deploy.QwdttAdmin
+import app.rawline.mobile.outbound.types.VkCallHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,7 +41,7 @@ class QwdttAccessActivity : ServerScreenActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(MobilePalette.background))
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen) }
         val toolbar = Toolbar(this).apply {
             setTitleTextColor(MobilePalette.text); setNavigationIcon(R.drawable.baseline_arrow_back_24); setNavigationOnClickListener { finish() }
             title = "Пользователи и подписки"
@@ -52,7 +52,7 @@ class QwdttAccessActivity : ServerScreenActivity() {
             .setOnMenuItemClickListener { form(null); true }
         val content = ui.column().apply { setPadding(ui.dp(16), ui.dp(8), ui.dp(16), ui.dp(24)) }
         search = ui.input("Поиск").apply {
-            setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(12)); background = ui.card(16).background
+            setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(12)); background = ui.card().background
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
                 override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
@@ -117,7 +117,7 @@ class QwdttAccessActivity : ServerScreenActivity() {
                 if (access.label.isNotBlank()) addView(ui.text(access.password, 13f, MobilePalette.muted, mono = true))
             }, LinearLayout.LayoutParams(0, -2, 1f))
             addView(ui.iconButton(R.drawable.ic_mobile_copy_outline, "Скопировать пароль") {
-                app.qthrone.mobile.SagerNet.trySetPrimaryClip(access.password)
+                app.rawline.mobile.SagerNet.trySetPrimaryClip(access.password)
             }, LinearLayout.LayoutParams(ui.dp(44), ui.dp(44)))
         })
         addView(LinearLayout(context).apply {
@@ -147,8 +147,7 @@ class QwdttAccessActivity : ServerScreenActivity() {
         val sheet = MobileSheetDialog(this)
         val body = ui.column(20).apply { setBackgroundColor(MobilePalette.surface) }
         body.addView(ui.text(if (existing == null) "Новый пароль доступа" else "Изменить доступ", 22f, bold = true))
-        val label = ui.input("Имя (кому выдан)", existing?.label.orEmpty())
-        body.addView(label)
+        val label = ui.field(body, "Имя (кому выдан)", existing?.label.orEmpty())
         body.addView(ui.text("VK хеши", 14f, MobilePalette.muted).apply { setPadding(0, ui.dp(14), 0, 0) })
         val hashBox = ui.column()
         fun addHash(value: String) {
@@ -161,14 +160,22 @@ class QwdttAccessActivity : ServerScreenActivity() {
         }
         (existing?.hashes?.ifEmpty { null } ?: listOf("")).forEach(::addHash)
         body.addView(hashBox)
-        body.addView(ui.text("+ Добавить хеш", 15f, ui.accent).apply {
-            setPadding(0, ui.dp(10), 0, ui.dp(10)); setOnClickListener { addHash("") }
-        })
-        val days = ui.input(if (existing == null) "Дней" else "Продлить на дней (пусто — без изменений)", if (existing == null) "30" else "", number = true)
-        val devices = ui.input("Устройств", (existing?.maxDevices ?: 1).toString(), number = true)
         body.addView(LinearLayout(this).apply {
-            addView(days, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = ui.dp(8) })
-            addView(devices, LinearLayout.LayoutParams(0, -2, 1f))
+            addView(ui.textButton("+ Добавить хеш") { addHash("") })
+        })
+        ui.createdCallsButton(body, 16) { picked ->
+            val present = (0 until hashBox.childCount).map { ((hashBox.getChildAt(it) as LinearLayout).getChildAt(0) as android.widget.EditText).text.toString().let(VkCallHash::strip) }
+            for (hash in picked.filter { it !in present }) {
+                val empty = (0 until hashBox.childCount).map { (hashBox.getChildAt(it) as LinearLayout).getChildAt(0) as android.widget.EditText }.firstOrNull { it.text.isBlank() }
+                if (empty != null) empty.setText(hash) else addHash(hash)
+            }
+        }
+        val left = ui.column(); val right = ui.column()
+        val days = ui.field(left, if (existing == null) "Дней" else "Продлить на дней (пусто — без изменений)", if (existing == null) "30" else "", number = true)
+        val devices = ui.field(right, "Устройств", (existing?.maxDevices ?: 1).toString(), number = true)
+        body.addView(LinearLayout(this).apply {
+            addView(left, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = ui.dp(8) })
+            addView(right, LinearLayout.LayoutParams(0, -2, 1f))
         })
         body.addView(ui.gap(12))
         body.addView(ui.button(if (existing == null) "Создать" else "Сохранить", primary = true) {

@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.os.Bundle
 import android.text.InputType
@@ -14,19 +14,19 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.DeployManager
-import app.qthrone.mobile.deploy.DeployStore
-import app.qthrone.mobile.deploy.OutboundProfileForms
-import app.qthrone.mobile.deploy.OutboundServerSnapshot
-import app.qthrone.mobile.deploy.ProxyKind
-import app.qthrone.mobile.deploy.SshCredentials
-import app.qthrone.mobile.deploy.WdttPlusExit
-import app.qthrone.mobile.deploy.externalProxyCredentialsIssue
-import app.qthrone.mobile.deploy.friendlyDeployError
-import app.qthrone.mobile.deploy.isValidPublicHost
-import app.qthrone.mobile.deploy.localProxyCredentialsIssue
-import app.qthrone.mobile.deploy.tunInterfaceNameIssue
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.DeployManager
+import app.rawline.mobile.deploy.DeployStore
+import app.rawline.mobile.deploy.OutboundProfileForms
+import app.rawline.mobile.deploy.OutboundServerSnapshot
+import app.rawline.mobile.deploy.ProxyKind
+import app.rawline.mobile.deploy.SshCredentials
+import app.rawline.mobile.deploy.WdttPlusExit
+import app.rawline.mobile.deploy.externalProxyCredentialsIssue
+import app.rawline.mobile.deploy.friendlyDeployError
+import app.rawline.mobile.deploy.isValidPublicHost
+import app.rawline.mobile.deploy.localProxyCredentialsIssue
+import app.rawline.mobile.deploy.tunInterfaceNameIssue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.launch
@@ -54,7 +54,7 @@ class WdttPlusExitActivity : ServerScreenActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(MobilePalette.background))
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.background) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(MobilePalette.screen) }
         val toolbar = Toolbar(this).apply {
             setTitleTextColor(MobilePalette.text); setNavigationIcon(R.drawable.baseline_arrow_back_24); setNavigationOnClickListener { finish() }
             title = "Выходной IP и прокси"
@@ -156,11 +156,7 @@ class WdttPlusExitActivity : ServerScreenActivity() {
     }
 
     private fun field(parent: LinearLayout, label: String, value: String, number: Boolean = false, secret: Boolean = false): EditText {
-        parent.addView(ui.text(label, 14f, MobilePalette.muted).apply { setPadding(0, ui.dp(12), 0, ui.dp(4)) })
-        return ui.input(label, value, number).also {
-            if (secret) it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            parent.addView(it)
-        }
+        return ui.field(parent, label, value, number, secret)
     }
 
     private fun actions(parent: LinearLayout, vararg buttons: Pair<String, () -> Unit>) {

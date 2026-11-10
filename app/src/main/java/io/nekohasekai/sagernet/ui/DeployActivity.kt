@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -16,8 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.*
-import app.qthrone.mobile.R
-import app.qthrone.mobile.deploy.*
+import app.rawline.mobile.R
+import app.rawline.mobile.deploy.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import moe.matsuri.nb4a.ui.SimpleMenuPreference
@@ -34,7 +34,7 @@ class DeployActivity : ServerScreenActivity() {
     private var shownQuestion: DeployQuestion? = null
     private var shownConfig = ""
     private var wasRunning = false
-    val kind get() = intent.getStringExtra("kind").orEmpty().takeIf { it in listOf("qwdtt","csqtt","wdttplus") } ?: "qwdtt"
+    val kind get() = intent.getStringExtra("kind").orEmpty().takeIf { it in listOf("qwdtt","csqtt","mrtt","wdttplus","freeturn") } ?: "qwdtt"
     private val keyPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if(uri != null) lifecycleScope.launch {
             val text = withContext(Dispatchers.IO) { runCatching {
@@ -51,7 +51,7 @@ class DeployActivity : ServerScreenActivity() {
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(MobilePalette.background))
         shownConfig=savedInstanceState?.getString("shownConfig").orEmpty()
-        val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setBackgroundColor(MobilePalette.background) }
+        val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setBackgroundColor(MobilePalette.screen) }
         toolbar=Toolbar(this).apply { setTitleTextColor(MobilePalette.text);setNavigationIcon(R.drawable.baseline_arrow_back_24);setNavigationOnClickListener { back() } }
         val content=FrameLayout(this).apply { id=android.R.id.content+3 }
         val loading=ProgressBar(this)
@@ -73,7 +73,27 @@ class DeployActivity : ServerScreenActivity() {
             if(savedInstanceState==null) supportFragmentManager.beginTransaction().replace(content.id,Screen()).commitNow()
             else screen()?.build()
         }
-        lifecycleScope.launch {
+        // MRTT installs run side by side, each with its own state; the toolbar button shows them while any goes.
+        if(kind=="mrtt") {
+            if(!intent.getBooleanExtra("directEditor",false)) MrttDeployJobs.attach(this,toolbar,this)
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    app.rawline.mobile.deploy.MrttDeploy.states.collect { states ->
+                        val state=states[server?.id] ?: return@collect
+                        screen()?.render(state)
+                        if(state.trust.isNotBlank() && state.trust!=shownTrust) {
+                            shownTrust=state.trust
+                            val id=state.serverId
+                            MobileAlertDialogBuilder(this@DeployActivity).setTitle("Ключ сервера SSH")
+                                .setMessage("Сверьте отпечаток с ключом VPS:\n${state.trust}")
+                                .setPositiveButton("Доверять") { _,_ -> app.rawline.mobile.deploy.MrttDeploy.approve(id,true) }
+                                .setNegativeButton(android.R.string.cancel) { _,_ -> app.rawline.mobile.deploy.MrttDeploy.approve(id,false) }
+                                .setOnCancelListener { app.rawline.mobile.deploy.MrttDeploy.approve(id,false) }.show()
+                        }
+                    }
+                }
+            }
+        } else lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 DeployEngine.state.collect { state ->
                     screen()?.render(state)
@@ -113,16 +133,19 @@ class DeployActivity : ServerScreenActivity() {
         screen()?.refreshSaveAction()
     }
     fun pickKey() { keyPicker.launch("*/*") }
+    fun currentState(): DeployState = if(kind=="mrtt") server?.id?.let { app.rawline.mobile.deploy.MrttDeploy.states.value[it] } ?: DeployState() else DeployEngine.state.value
+    fun cancelOperation() { if(kind=="mrtt") server?.id?.let(app.rawline.mobile.deploy.MrttDeploy::cancel) else DeployEngine.cancel() }
+    fun busy(id: String) = if(kind=="mrtt") app.rawline.mobile.deploy.MrttDeploy.running(id) else DeployEngine.state.value.running && DeployEngine.state.value.serverId==id
     fun start(uninstall: Boolean) {
         val target=server ?: return
         if(DeployStore.all().none { it.id==target.id }) {
             MobileAlertDialogBuilder(this).setMessage("Сначала сохраните VPS кнопкой в верхнем меню.").setPositiveButton(android.R.string.ok,null).show()
             return
         }
-        if(DeployEngine.state.value.running) { Toast.makeText(this,"Дождитесь завершения текущей операции",Toast.LENGTH_SHORT).show();return }
+        if(if(kind=="mrtt") app.rawline.mobile.deploy.MrttDeploy.running(target.id) else DeployEngine.state.value.running) { Toast.makeText(this,"Дождитесь завершения текущей операции",Toast.LENGTH_SHORT).show();return }
         val valid=runCatching { target.validate(!uninstall) }
         if(valid.isFailure) { MobileAlertDialogBuilder(this).setMessage(valid.exceptionOrNull()?.message).setPositiveButton(android.R.string.ok,null).show();return }
-        fun run(removeData: Boolean = false) { DeployEngine.start(target,uninstall,removeData);shownConfig="";shownTrust="";showConsole() }
+        fun run(removeData: Boolean = false) { if(kind=="mrtt") app.rawline.mobile.deploy.MrttDeploy.start(target,uninstall) else DeployEngine.start(target,uninstall,removeData);shownConfig="";shownTrust="";showConsole() }
         // WDTT Plus removes the service either keeping /etc/wdtt (clients, keys) for a later install or with it.
         if(uninstall && kind=="wdttplus") MobileAlertDialogBuilder(this).setTitle("Удалить WDTT Plus с VPS?")
             .setMessage("Сервис будет удалён с ${target["host"]}. Можно сохранить данные (клиентов, ключи WireGuard) для повторной установки или удалить их вместе с сервисом.")
@@ -135,6 +158,6 @@ class DeployActivity : ServerScreenActivity() {
     private fun showConsole() { screen()?.revealConsole() }
     class Screen : DeployEditorFragment()
     companion object {
-        fun title(kind: String) = when(kind) { "csqtt" -> "CSQTT"; "wdttplus" -> "WDTT Plus"; else -> "qWDTT" }
+        fun title(kind: String) = when(kind) { "csqtt" -> "CSQTT"; "mrtt" -> "MRTT"; "wdttplus" -> "WDTT Plus"; "freeturn" -> "FreeTurn"; else -> "qWDTT" }
     }
 }

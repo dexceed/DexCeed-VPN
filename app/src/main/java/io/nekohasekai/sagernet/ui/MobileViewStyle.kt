@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.content.res.ColorStateList
 import android.view.View
@@ -13,7 +13,6 @@ object MobileViewStyle {
     fun apply(root: View) {
         if(root is MaterialCardView) {
             root.setCardBackgroundColor(MobilePalette.surface)
-            root.radius=16f*root.resources.displayMetrics.density
             root.strokeColor=MobilePalette.outline
             root.strokeWidth=1
         }
@@ -22,9 +21,9 @@ object MobileViewStyle {
         if(root.isClickable && root !is MaterialCardView && root !is android.widget.EditText) MobileFeedback.apply(root)
         if(root is RecyclerView) {
             root.isVerticalScrollBarEnabled=false
-            root.setBackgroundColor(MobilePalette.background)
-            if(root.getTag(app.qthrone.mobile.R.id.route_list) != true) {
-                root.setTag(app.qthrone.mobile.R.id.route_list,true)
+            root.setBackgroundColor(MobilePalette.screen)
+            if(root.getTag(app.rawline.mobile.R.id.route_list) != true) {
+                root.setTag(app.rawline.mobile.R.id.route_list,true)
                 root.addOnChildAttachStateChangeListener(object: RecyclerView.OnChildAttachStateChangeListener {
                     override fun onChildViewAttachedToWindow(view: View) = apply(view)
                     override fun onChildViewDetachedFromWindow(view: View) {}

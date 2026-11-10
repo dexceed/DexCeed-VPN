@@ -1,4 +1,4 @@
-package app.qthrone.mobile.ui
+package app.rawline.mobile.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,27 +17,27 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import app.qthrone.mobile.ui.MobileAlertDialogBuilder as MaterialAlertDialogBuilder
+import app.rawline.mobile.ui.MobileAlertDialogBuilder as MobileAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import app.qthrone.mobile.R
-import app.qthrone.mobile.aidl.ISagerNetService
-import app.qthrone.mobile.bg.BaseService
-import app.qthrone.mobile.bg.SagerConnection
-import app.qthrone.mobile.bg.autoselector.AutoSelectorClient
-import app.qthrone.mobile.bg.autoselector.AutoSelectorProfiles
-import app.qthrone.mobile.bg.autoselector.AutoSelectorStatus
-import app.qthrone.mobile.database.ProfileManager
-import app.qthrone.mobile.database.ProxyEntity
-import app.qthrone.mobile.databinding.LayoutAutoSelectorMemberBinding
-import app.qthrone.mobile.databinding.LayoutAutoSelectorStatusBinding
-import app.qthrone.mobile.ktx.Logs
-import app.qthrone.mobile.ktx.needReload
-import app.qthrone.mobile.ktx.runOnDefaultDispatcher
-import app.qthrone.mobile.ui.profile.ProfileSettingsActivity
-import app.qthrone.mobile.ui.profile.profileSettingsIntent
-import app.qthrone.mobile.ui.profiles.ProfilesDbWatcher
-import app.qthrone.mobile.widget.applyInsetPadding
-import app.qthrone.mobile.widget.applyListInsets
+import app.rawline.mobile.R
+import app.rawline.mobile.aidl.ISagerNetService
+import app.rawline.mobile.bg.BaseService
+import app.rawline.mobile.bg.SagerConnection
+import app.rawline.mobile.bg.autoselector.AutoSelectorClient
+import app.rawline.mobile.bg.autoselector.AutoSelectorProfiles
+import app.rawline.mobile.bg.autoselector.AutoSelectorStatus
+import app.rawline.mobile.database.ProfileManager
+import app.rawline.mobile.database.ProxyEntity
+import app.rawline.mobile.databinding.LayoutAutoSelectorMemberBinding
+import app.rawline.mobile.databinding.LayoutAutoSelectorStatusBinding
+import app.rawline.mobile.ktx.Logs
+import app.rawline.mobile.ktx.needReload
+import app.rawline.mobile.ktx.runOnDefaultDispatcher
+import app.rawline.mobile.ui.profile.ProfileSettingsActivity
+import app.rawline.mobile.ui.profile.profileSettingsIntent
+import app.rawline.mobile.ui.profiles.ProfilesDbWatcher
+import app.rawline.mobile.widget.applyInsetPadding
+import app.rawline.mobile.widget.applyListInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -451,7 +451,7 @@ class AutoSelectorStatusActivity : ThemedActivity(), SagerConnection.Callback {
         }
         note(row).takeIf { it.isNotEmpty() && it != profile?.testError }?.let { lines.add(it) }
 
-        val builder = MaterialAlertDialogBuilder(this).setTitle(row.name)
+        val builder = MobileAlertDialogBuilder(this).setTitle(row.name)
         val actionable = liveFor(status) && status.phase != AutoSelectorStatus.PHASE_MEASURING
         if (actionable) {
             if (row.pinned) {
@@ -479,7 +479,9 @@ class AutoSelectorStatusActivity : ThemedActivity(), SagerConnection.Callback {
         override fun getItemCount(): Int = rows.size
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            MemberHolder(LayoutAutoSelectorMemberBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            MemberHolder(LayoutAutoSelectorMemberBinding.inflate(LayoutInflater.from(parent.context), parent, false).apply {
+                root.background = MobilePalette.rowShape(parent.context); MobileFeedback.apply(root)
+            })
 
         override fun onBindViewHolder(holder: MemberHolder, position: Int) = holder.bind(rows[position])
     }

@@ -461,7 +461,7 @@
     <string name="action_masque">MASQUE</string>
     <string name="action_openvpn">OpenVPN</string>
     <string name="action_openconnect">OpenConnect</string>
-    <string name="throne_link">Throne bağlantısı</string>
+    <string name="rawline_link">DexCeed VPN bağlantısı</string>
     <string name="edit_as_json">JSON olarak düzenle</string>
     <string name="raw_json_invalid">JSON bu tür için geçerli bir profil değil</string>
     <string name="tri_state_default">Varsayılanı koru</string>
@@ -488,7 +488,7 @@
     <string name="settings_core">Çekirdek</string>
     <string name="settings_core_sum">Günlükleme, istatistik, Clash API, güvenlik, NTP</string>
     <string name="settings_backup">Yedekleme ve geri yükleme</string>
-    <string name="settings_backup_sum">Throne masaüstü ile paylaşılan .thrbackup dosyaları, yerel ve WebDAV</string>
+    <string name="settings_backup_sum">DexCeed VPN masaüstü ile paylaşılan .rwlbackup dosyaları, yerel ve WebDAV</string>
     <string name="setting_default">Varsayılan</string>
     <string name="setting_default_value">Varsayılan (%s)</string>
     <string name="cag_connection">Bağlantı</string>
@@ -663,7 +663,7 @@
     <string name="route_import_clipboard_profile">Panodan \"%s\" rota profili içe aktarılsın mı?</string>
     <string name="route_import_clipboard_rules">Panodan bir rota kural listesi içe aktarılsın mı?</string>
     <string name="route_import_paste_title">Rota profili içe aktar</string>
-    <string name="route_import_paste_hint">Bir Throne rota bağlantısı, bir remoteRoute bağlantısı, bir base64 bloğu veya bir JSON kural dizisi yapıştırın</string>
+    <string name="route_import_paste_hint">Bir DexCeed VPN rota bağlantısı, bir remoteRoute bağlantısı, bir base64 bloğu veya bir JSON kural dizisi yapıştırın</string>
     <string name="route_import_invalid_title">Geçersiz girdi</string>
     <string name="route_import_invalid">Bu rota profili içe aktarılamadı:\n%s</string>
     <string name="route_import_warnings_title">Uyarılarla içe aktarıldı</string>
@@ -710,7 +710,7 @@
     <string name="route_profile_default_outbound">Varsayılan giden</string>
     <string name="route_profile_remote_source">Uzak kaynak</string>
     <string name="route_profile_url">URL</string>
-    <string name="route_profile_url_hint">https://… (throne://route bağlantısı, base64 veya JSON)</string>
+    <string name="route_profile_url_hint">https://… (rawline://route bağlantısı, base64 veya JSON)</string>
     <string name="route_profile_auto_update">Otomatik güncelleme</string>
     <string name="route_profile_auto_update_sum">Uzak profiller otomatik güncellendiğinde bu profili URL\'den yeniden getir. Yerel düzenlemeleriniz her güncellemede üzerine yazılır.</string>
     <string name="route_profile_fetch">Şimdi getir</string>
@@ -1032,7 +1032,7 @@
     </plurals>
     <string name="profiles_copy_links">Bağlantıları kopyala</string>
     <string name="profiles_copy_share_links">Paylaşma bağlantıları</string>
-    <string name="profiles_copy_throne_links">Throne bağlantıları</string>
+    <string name="profiles_copy_rawline_links">DexCeed VPN bağlantıları</string>
     <plurals name="profiles_copied">
         <item quantity="one">%d öğe kopyalandı</item>
         <item quantity="other">%d öğe kopyalandı</item>
@@ -1417,14 +1417,14 @@
     <string name="backup_part_routes">Rota profilleri</string>
     <string name="backup_part_settings">Ayarlar</string>
     <string name="backup_part_otp">OTP profilleri (Android\'de geri yüklenmez)</string>
-    <string name="backup_local_summary">Yedekler Throne masaüstü biçimini (.thrbackup) kullanır: her iki uygulama da geri yükleyebilir. WebDAV bilgileri bu cihazda kalır.</string>
+    <string name="backup_local_summary">Yedekler DexCeed VPN masaüstü biçimini (.rwlbackup) kullanır: her iki uygulama da geri yükleyebilir. WebDAV bilgileri bu cihazda kalır.</string>
     <string name="backup_create">Yedek oluştur</string>
     <string name="backup_restore">Geri yükle</string>
     <string name="backup_select_part">Yedeğe dahil etmek için en az bir bölüm seçin.</string>
     <string name="backup_creating">Yedek oluşturuluyor…</string>
     <string name="backup_created">Yedek oluşturuldu. Dahil edilenler: %s</string>
     <string name="backup_failed">Yedek oluşturulamadı: %s</string>
-    <string name="backup_open_label">Throne yedeğini geri yükle</string>
+    <string name="backup_open_label">DexCeed VPN yedeğini geri yükle</string>
     <string name="backup_restore_title">Yedeği geri yükle</string>
     <string name="backup_restore_header">%1$s tarihinde oluşturulmuş yedek (%2$s).\nGeri yüklenecek bölümleri seçin:</string>
     <string name="backup_unknown_date">bilinmeyen tarih</string>
@@ -1440,7 +1440,7 @@
     <string name="backup_restored">Yedek başarıyla geri yüklendi. Değişikliklerin geçerli olması için DexCeed VPN şimdi yeniden başlayacak.</string>
     <string name="backup_restored_warnings">Yedek geri yüklendi. Değişikliklerin geçerli olması için DexCeed VPN şimdi yeniden başlayacak.\n\nNotlar:\n%s</string>
     <string name="backup_restore_failed">Geri yükleme başarısız: %s</string>
-    <string name="backup_error_not_backup">Geçerli bir Throne yedek dosyası değil.</string>
+    <string name="backup_error_not_backup">Geçerli bir DexCeed VPN yedek dosyası değil.</string>
     <string name="backup_error_version">Desteklenmeyen yedek biçimi sürümü: %d.\nBu yedek uygulamanın daha yeni bir sürümüyle oluşturulmuş olabilir.</string>
     <string name="backup_error_corrupt">Yedek dosyası bozulmuş veya eksik.</string>
     <string name="backup_error_nothing">Bu yedek dosyası geri yüklenebilir veri içermiyor.</string>
@@ -1455,17 +1455,17 @@
     <string name="backup_warn_dropped_profiles">Hiç grubu olmayan %d profil atlandı.</string>
     <string name="backup_warn_unlisted_profiles">Gruplarının listesinde eksik olan %d profil sonuna eklendi.</string>
     <string name="backup_warn_orphan_rules">Eksik rota profillerinin %d kuralı atlandı.</string>
-    <string name="backup_warn_raw_routes">Throne masaüstünden %d ham rota profili salt okunur tutuluyor; Android bunları kullanamaz.</string>
+    <string name="backup_warn_raw_routes">DexCeed VPN masaüstünden %d ham rota profili salt okunur tutuluyor; Android bunları kullanamaz.</string>
     <string name="backup_warn_lan_access">Yedek diğer cihazların bağlanmasına izin veriyor (gelen adres %s); bu kapatılmıştı. Gerekirse gelen ayarlarında tekrar açın.</string>
     <string name="webdav_choose_backup">Bir yedek seçin</string>
-    <string name="webdav_no_backups">%s içinde .thrbackup dosyası bulunamadı.</string>
+    <string name="webdav_no_backups">%s içinde .rwlbackup dosyası bulunamadı.</string>
     <string name="webdav_listing">WebDAV klasörü okunuyor…</string>
     <string name="webdav_uploading">WebDAV\'a yükleniyor…</string>
     <string name="webdav_downloading">WebDAV\'tan indiriliyor…</string>
-    <string name="route_raw_summary">Ham (Throne masaüstü) · salt okunur</string>
+    <string name="route_raw_summary">Ham (DexCeed VPN masaüstü) · salt okunur</string>
     <string name="route_raw_view">Görüntüle</string>
-    <string name="route_raw_not_usable">Throne masaüstünden ham rota profilleri Android\'de kullanılamaz.</string>
-    <string name="route_raw_notice">Bu ham rota profili Throne masaüstünde yapılmıştır. Yedeklerin onu masaüstüne geri vermesi için olduğu gibi tutulur; Android onu düzenleyemez veya kullanamaz.</string>
+    <string name="route_raw_not_usable">DexCeed VPN masaüstünden ham rota profilleri Android\'de kullanılamaz.</string>
+    <string name="route_raw_notice">Bu ham rota profili DexCeed VPN masaüstünde yapılmıştır. Yedeklerin onu masaüstüne geri vermesi için olduğu gibi tutulur; Android onu düzenleyemez veya kullanamaz.</string>
     <plurals name="route_endpoints_notice">
         <item quantity="one">%d masaüstü uç nokta profili (OpenVPN / OpenConnect) bu rota profiliyle birlikte tutulur ama Android\'de çalışmaz.</item>
         <item quantity="other">%d masaüstü uç nokta profili (OpenVPN / OpenConnect) bu rota profiliyle birlikte tutulur ama Android\'de çalışmaz.</item>
