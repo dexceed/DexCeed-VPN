@@ -58,7 +58,12 @@ object CoreConfigs {
      */
     fun buildMain(profile: ProxyEntity, deferRuleSets: Boolean = false): GeneratedConfig {
         val (landing, front) = groupProxies(profile.groupId)
-        val options = SagerDatabase.groupDao.getById(profile.groupId)?.subOptions
+        val ownOptions = SagerDatabase.groupDao.getById(profile.groupId)?.subOptions
+        val selector = profile.outbound as? app.rawline.mobile.outbound.types.AutoSelector
+        val sources = selector?.gids?.distinct()?.mapNotNull { SagerDatabase.groupDao.getById(it) }.orEmpty()
+        val options = if (selector != null && selector.gids.distinct().size == 1 && sources.size == 1)
+            app.rawline.mobile.group.DexceedRouting.inherited(ownOptions, sources.map { it.url }, sources.single().subOptions)
+        else ownOptions
         val chosenRoute = options?.routeProfileId?.takeIf { it > 0 }?.let(RouteManager::get)?.takeIf { !it.is_raw }
         val bound = options?.takeIf { it.routingProvider.isNotBlank() && it.providerRoutingEnabled }
         val route = when {

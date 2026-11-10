@@ -27,7 +27,11 @@ object DexceedSubscription {
             source.url = url
             source.skipAutoUpdate = false
             source.subOptions = source.subOptions.copy(sendHwid = SendHwid.ON, autoUpdateMinutes = 30,
-                requestTimeoutSeconds = 10, allowInsecureRequests = false, providerIgnoreImport = true)
+                requestTimeoutSeconds = 10, allowInsecureRequests = false, providerIgnoreImport = false)
+            GroupRepo.save(source)
+        }
+        if (source.subOptions.providerIgnoreImport) {
+            source.subOptions = source.subOptions.copy(providerIgnoreImport = false)
             GroupRepo.save(source)
         }
         store.putString(key(source.id), display.id.toString())
@@ -53,7 +57,7 @@ object DexceedSubscription {
     /** Upgrade existing accounts once; do not delete old profiles or change another provider's current selection. */
     suspend fun migrateExisting() {
         val store = DataStore.configurationStore
-        if (store.getBoolean("dexceed_managed_subscriptions_v1", false)) return
+        if (store.getBoolean("dexceed_managed_subscriptions_v2", false)) return
         val current = GroupRepo.currentId()
         val previousSelected = DataStore.selectedProxy
         var selectedReplacement: Long? = null
@@ -68,6 +72,6 @@ object DexceedSubscription {
             }
         }
         DataStore.selectedProxy = selectedReplacement ?: previousSelected
-        store.putBoolean("dexceed_managed_subscriptions_v1", true)
+        store.putBoolean("dexceed_managed_subscriptions_v2", true)
     }
 }
